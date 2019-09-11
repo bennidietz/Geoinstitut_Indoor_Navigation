@@ -44,12 +44,15 @@ $(document).ready(function(){
     var pfad6 = new Pfad(54.1,83.7,54.1,52.2)
     var pfad7 = new Pfad(23.7,52.2,23.7,22.8)
     var pfade = [pfad1, pfad2, pfad3, pfad4, pfad5, pfad6, pfad7]
-    var startPunkt = [40.7, 19.8];
+    var startPunkt = [40.7, 19.8]; // 126
+    //var startPunkt = [86.2, 52.3]; // 139
+    //var endPunkt = [67.9, 19.8]; // 108
     //var endPunkt = [49.8, 85.8]; // 108
     //var endPunkt = [32,54]; // 147
     //var endPunkt = [67.7,85.8]; // 104
-    //var endPunkt = [96.7,85.8]; // 101
-    var endPunkt = [86.1,67.3]; // 1
+    var endPunkt = [96.7,85.8]; // 101
+    //var endPunkt = [86.1,67.3]; // 140
+    //var endPunkt = [14.2,52.5]; // 120
 
     punkte_route = getShortestPathBetweenPointsOnLevel(startPunkt, endPunkt);
     draw(punkte_route);
@@ -77,7 +80,7 @@ $(document).ready(function(){
                     if (zweiPfadeVerbunden(pfade[i], pfad_endPunkt)) {
                         // Pfad direkt mit Ende Endpfad verbunden
                         moegliche_pfade.push([pfad_startPunkt, pfade[i], pfad_endPunkt]);
-                    } else {
+                    }
                         // zwei Zwischenpfade ?   
                         for (var j in pfade) {
                             if (zweiPfadeVerbunden(pfade[i], pfade[j]) && 
@@ -85,7 +88,7 @@ $(document).ready(function(){
                                 if (zweiPfadeVerbunden(pfade[j], pfad_endPunkt)) {
                                     // Pfad mit Endpfad verbunden
                                     moegliche_pfade.push([pfad_startPunkt, pfade[i], pfade[j], pfad_endPunkt]);
-                                } else {
+                                }
                                     // drei Zwischenpfade ?
                                     for (var k in pfade) {
                                         if (zweiPfadeVerbunden(pfade[j], pfade[k]) && 
@@ -93,7 +96,7 @@ $(document).ready(function(){
                                             if (zweiPfadeVerbunden(pfade[k], pfad_endPunkt)) {
                                                 // Pfad mit Endpfad verbunden
                                                 moegliche_pfade.push([pfad_startPunkt, pfade[i], pfade[j], pfade[k], pfad_endPunkt]);
-                                            } else {
+                                            }
                                                 // vier Zwischenpfade ?
                                                 for (var l in pfade) {
                                                     if (zweiPfadeVerbunden(pfade[k], pfade[l]) && 
@@ -104,18 +107,16 @@ $(document).ready(function(){
                                                         }
                                                     }
                                                 }
-                                            }
                                         }
                                     }
-                                }
                             }
                         }
-                    }
             }
             }
             kuerzesterPfad = null;
             kuezeste_distanz = 100000;
             for (var o in moegliche_pfade) {
+                console.log(gesamtLaengePfad(startPunkt, moegliche_pfade[o], endPunkt))
                 if(gesamtLaengePfad(startPunkt, moegliche_pfade[o], endPunkt) < kuezeste_distanz) kuerzesterPfad = moegliche_pfade[o];
             }
             for (var p = 0; p < kuerzesterPfad.length-1; p++) {

@@ -36,6 +36,9 @@ function link(button) {
 }
 
 $(document).ready(function(){
+    $("#arraw").width($(window).width()/3)
+    $("#next_step").width($(window).width()/2)
+    
     var pfad1 = new Pfad(3.8,22.8,83.3, 22.8)
     var pfad2 = new Pfad(83.3,3.1,83.3,83.7)
     var pfad3 = new Pfad(16.7,83.7,97.7,83.7)
@@ -130,7 +133,7 @@ $(document).ready(function(){
     function draw(punkte_auf_pfad) {
         var ctx = document.getElementById('canvas').getContext('2d');
         var canvas = document.getElementById('canvas');
-        size = $(window).width()*0.9;
+        size = $(window).width();
         canvas.width = size;
         canvas.height = size;
         var img = new Image();

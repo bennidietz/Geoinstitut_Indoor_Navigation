@@ -119,85 +119,34 @@
     opacity:0.2;
 }
 
+.large_text {
+    font-size: 42px;
+}
+
+hr { background-color: black; height: 6px; border: 3; }
+
+.big-btn {
+        width: 90px;
+        height: 40px;
+    }
+
 </style>
 
 <head>
-    <title>Gebäudeplan Krankenhaus Winsen</title>
+    <title>Geoinstitut Navigation</title>
 </head>
 
 <body>
-        <canvas id="canvas"></canvas>
-    <h1>Gebäudeplan für das Krankenhaus Winsen</h1>
-
-    <div class="col-md-4 p-0 bg-indigo h-md-100">
-        <div class="text-white d-md-flex align-items-center h-100 p-5 text-center justify-content-center">
-            <div class="logoarea pt-5 pb-5">
-                <label class="container">EG
-                    <input id="eg" type="radio" checked="checked" name="radio">
-                    <span class="checkmark"></span>
-                </label>
-                <label class="container">1. OG
-                    <input id="og1" type="radio" name="radio">
-                    <span class="checkmark"></span>
-                </label>
-                <label class="container">2. OG
-                    <input id="og2" type="radio" name="radio">
-                    <span class="checkmark"></span>
-                </label>
-                <label class="container">3. OG
-                    <input id="og3" type="radio" name="radio">
-                    <span class="checkmark"></span>
-                </label>
-                <label class="container">4. OG
-                    <input id="og4" type="radio" name="radio">
-                    <span class="checkmark"></span>
-                </label>
-            </div>
-        </div>
+    <header>
+            <p class="large_text" align="center">Navigation im Geoinstitut</p>
+    </header>
+    <canvas id="canvas"></canvas>
+    <div align="center" id="araw_section">
+        <h2></h2>
+        <img id="arraw" src="arrow_left.png">
+        <p class="large_text">100 m</p>
     </div>
-
-    <!-- Second Half -->
-
-    <div class="col-md-8 p-0 bg-white h-md-100 loginarea">
-        <div class="d-md-flex align-items-center h-md-100 p-5 justify-content-center">
-            <div class="image">
-            <img id="img" width="100%" src="EG.png" usemap="#mapeg">
-            <a href="http://www.example.cz/1.html" style="top: 0%; left: 0%; width: 38.5%; height: 22.5%;"></a>
-            <a href="http://www.example.cz/1.html" style="top: 4%; left: 38.5%; width: 37%; height: 18.5%;"></a>
-            </div>
-
-            <map name="mapeg">
-                <area shape="rect" coords="0%,0%,20%,20%" alt="Sun" href="sun.htm">
-                <area shape="circle" coords="90,58,3" alt="Mercury" href="mercur.htm">
-                <area shape="circle" coords="124,58,8" alt="Venus" href="venus.htm">
-            </map>
-            <map name="mapeg">
-                    <area shape="rect" coords="0,0,82,126" alt="Sun" href="sun.htm">
-                    <area shape="circle" coords="90,58,3" alt="Mercury" href="mercur.htm">
-                    <area shape="circle" coords="124,58,8" alt="Venus" href="venus.htm">
-            </map>
-            <map name="mapog1">
-                    <area shape="rect" coords="0,0,82,126" alt="Sun" href="sun.htm">
-                    <area shape="circle" coords="90,58,3" alt="Mercury" href="mercur.htm">
-                    <area shape="circle" coords="124,58,8" alt="Venus" href="venus.htm">
-            </map>
-            <map name="mapog2">
-                    <area shape="rect" coords="0,0,82,126" alt="Sun" href="sun.htm">
-                    <area shape="circle" coords="90,58,3" alt="Mercury" href="mercur.htm">
-                    <area shape="circle" coords="124,58,8" alt="Venus" href="venus.htm">
-            </map>
-            <map name="mapog3">
-                    <area shape="rect" coords="0,353,305,370" onmouseover="mouseover(this)">
-                    <area shape="circle" coords="90,58,3" alt="Mercury" href="mercur.htm">
-                    <area shape="circle" coords="124,58,8" alt="Venus" href="venus.htm">
-            </map>
-        </div>
-    </div>
-
-    <div class="tooltip">Hover over me
-            <span class="tooltiptext">Tooltip text</span>
-          </div>
-
+    <hr>
 </body>
 
 

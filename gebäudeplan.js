@@ -36,9 +36,19 @@ function link(button) {
 }
 
 $(document).ready(function(){
-    $("#arraw").width($(window).width()/3)
+    $("#arrow").width($(window).width()/3)
     $("#next_step").width($(window).width()/2)
-    
+    $("#von_raum").text("123")
+    $("#nach_raum").text("140")
+    $("#level").text("5")
+    var percentage_left = 1 - ($(window).width()/$(window).height());
+    $("#arrow_section").height($(window).height()*percentage_left*3/5)
+    $("footer").height($(window).height()*percentage_left/6)
+    $("#beenden").height($("footer").height())
+    $("#beenden").width($(window).width()/3)
+    $("#zum_naechsten_schritt").height($("footer").height())
+    $("#zum_naechsten_schritt").width($(window).width()*2/3-35)
+
     var pfad1 = new Pfad(3.8,22.8,83.3, 22.8)
     var pfad2 = new Pfad(83.3,3.1,83.3,83.7)
     var pfad3 = new Pfad(16.7,83.7,97.7,83.7)
@@ -59,7 +69,6 @@ $(document).ready(function(){
 
     punkte_route = getShortestPathBetweenPointsOnLevel(startPunkt, endPunkt);
     draw(punkte_route);
-
 
     function getShortestPathBetweenPointsOnLevel(startPunkt, endPunkt) {
         var routing_pfad = [startPunkt];
@@ -130,10 +139,12 @@ $(document).ready(function(){
         routing_pfad.push(endPunkt);
         return routing_pfad;
     }
+
     function draw(punkte_auf_pfad) {
         var ctx = document.getElementById('canvas').getContext('2d');
         var canvas = document.getElementById('canvas');
         size = $(window).width();
+        if ($(window).width()>$(window).height()) size = size / 3; // Desktop Version
         canvas.width = size;
         canvas.height = size;
         var img = new Image();

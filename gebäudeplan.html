@@ -120,6 +120,8 @@
 }
 
 .large_text {
+    text-align: center;
+    
     font-size: 42px;
 }
 
@@ -130,6 +132,23 @@ hr { background-color: black; height: 6px; border: 3; }
         height: 40px;
     }
 
+#beenden {
+    background-color: red;
+    font-size: 42px;
+}
+
+#zum_naechsten_schritt {
+    background-color: green;
+    font-size: 42px;
+}
+
+header{
+    padding-top: 2%;
+    padding-bottom: 2%;
+    font-size: 25px;
+    background-color: black;
+}
+
 </style>
 
 <head>
@@ -138,15 +157,24 @@ hr { background-color: black; height: 6px; border: 3; }
 
 <body>
     <header>
-            <p class="large_text" align="center">Navigation im Geoinstitut</p>
+        <table width="100%" ID="Table2" style="margin: 0px; font-size: 27px; color: white">
+                <tr>
+                    <td align="center">Von Raum<br><b><div id="von_raum">205</div></b></td>
+                    <td align="center">Nach Raum<br><b><div id="nach_raum">206</div></b></td>
+                    <td align="center">Level: <b><div id="level">2</div></b></td>
+                </tr>
+                </table>
     </header>
     <canvas id="canvas"></canvas>
-    <div align="center" id="araw_section">
+    <div align="center" id="arrow_section">
         <h2></h2>
-        <img id="arraw" src="arrow_left.png">
+        <img id="arrow" src="arrow_left.png">
         <p class="large_text">100 m</p>
     </div>
     <hr>
+    <footer>
+        <button id="beenden" type="button">Beenden</button><button id="zum_naechsten_schritt" type="button">Zum nächsten Schritt</button>
+    </footer>
 </body>
 
 

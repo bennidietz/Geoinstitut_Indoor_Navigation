@@ -1,15 +1,19 @@
 const to_floor_plans_folder = "floor_plans/";
 const to_symbols_folder = "symbols/";
 
+var current_url = new URL(window.location);
+var from_room = current_url.searchParams.get("from_room");
+var to_room = current_url.searchParams.get("to_room");
+
 $(function() {
     // Seite ist geladen
     console.log(strings)
-    alert(strings["next_step"])
     var language_index = 1; // Englisch
     $("#label_from_room").text(strings["from_room"][language_index])
     $("#label_to_room").text(strings["to_room"][language_index])
     $("#label_level").text(strings["level"][language_index])
     $("#cancel_navigation").text(strings["cancel"][language_index])
+    $("#next_navigation_step").text(strings["next_step"][language_index])
 });
 
 $("#eg").click(function() {
@@ -56,8 +60,8 @@ $(document).ready(function() {
     $("footer").height($(window).height() * percentage_left / 6)
     $("#cancel_navigation").height($("footer").height())
     $("#cancel_navigation").width($(window).width() / 3)
-    $("#zum_naechsten_schritt").height($("footer").height())
-    $("#zum_naechsten_schritt").width($(window).width() * 2 / 3 - 35)
+    $("#next_navigation_step").height($("footer").height())
+    $("#next_navigation_step").width($(window).width() * 2 / 3 - 35)
 
     var pfad1 = new Pfad(3.8, 22.8, 83.3, 22.8)
     var pfad2 = new Pfad(83.3, 3.1, 83.3, 83.7)

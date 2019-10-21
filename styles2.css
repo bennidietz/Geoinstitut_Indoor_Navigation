@@ -1,0 +1,107 @@
+#header_table,
+#footer_table {
+    border: none !important;
+    width: 100%;
+}
+
+th {
+    width: 33%;
+}
+
+.header {
+    padding: 4% 4%;
+    background: #172154;
+    color: white;
+}
+
+.header_desktop {
+    padding: 1.5% 4%;
+    background: #172154;
+    color: white;
+}
+
+.cancel_table_field {
+    background: red;
+    padding: 10% 5%;
+}
+
+.cancel_table_field_desktop {
+    background: red;
+    padding: 1.5% 4%;
+}
+
+.next_step_table_field {
+    background: green;
+    padding: 10% 5%;
+}
+
+.next_step_table_field_desktop {
+    background: green;
+    padding: 1.5% 4%;
+}
+
+.labels_header_table {
+    text-align: center;
+    font-size: 2em;
+    color: white;
+}
+
+.labels_header_table_desktop {
+    text-align: center;
+    color: white;
+}
+
+.labels_footer_table {
+    text-align: center;
+    font-size: 3em;
+    color: white;
+}
+
+.labels_footer_table_desktop {
+    text-align: center;
+    color: white;
+}
+
+.sticky {
+    position: fixed;
+    top: 0;
+    width: 100%;
+}
+
+.sticky+.content {
+    padding-top: 40px;
+}
+
+body {
+    font: 16px Arial;
+}
+
+#main_section {
+    padding-top: 1%;
+    padding-bottom: 1%;
+}
+
+.footer {
+    position: fixed;
+    left: 0;
+    bottom: 0;
+    width: 100%;
+    color: black;
+    text-align: center;
+}
+
+.large_text {
+    text-align: center;
+    font-size: 40px;
+}
+
+img {
+    position: relative;
+}
+
+.center {
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    width: 50%;
+}

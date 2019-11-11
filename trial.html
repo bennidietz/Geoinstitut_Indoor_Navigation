@@ -21,7 +21,14 @@
                     <th align="center" class="labels_header_table">
                         <label id="label_level"></label><br>
                         <label id="value_level"></label>
-                    </th>
+                        <th align="center" class="table_spinner">
+                            Language:
+                            <select id="language_spinner">
+                                <option value="de">German</option>
+                                <option value="en">English</option>
+                                <option value="es">Spanish</option>
+                              </select>
+                        </th>
                 </tr>
             </thead>
             <tbody>
@@ -29,20 +36,49 @@
         </table>
     </div>
     <div id="main_section">
+        <div class="autocomplete" style="width:100%; font-size: 3em; padding: 20px;">
+            <input id="autocomplete_search" type="text" name="myCountry">
+        </div>
+
         <div class="modal-body row">
             <div class="col-md-6">
                 <!-- Your first column here -->
                 <canvas id="canvas"></canvas>
+                <table border="0" width="100%" ID="Table2" style="margin: 5px;">
+                    <tr>
+                        <td>
+                            <btn id="etagen_btn1" class="btn btn-default etagen_btn"></btn>
+                        </td>
+                        <td>
+                            <btn id="etagen_btn2" class="btn btn-default etagen_btn"></btn>
+                        </td>
+                        <td>
+                            <btn id="etagen_btn3" class="btn btn-default etagen_btn"></btn>
+                        </td>
+                        <td>
+                            <btn id="etagen_btn4" class="btn btn-default etagen_btn"></btn>
+                        </td>
+                        <td>
+                            <btn id="etagen_btn5" class="btn btn-default etagen_btn"></btn>
+                        </td>
+                        <td>
+                            <btn id="etagen_btn6" class="btn btn-default etagen_btn"></btn>
+                        </td>
+                        <td>
+                            <btn id="etagen_btn7" class="btn btn-default etagen_btn"></btn>
+                        </td>
+                    </tr>
+                </table>
             </div>
             <div style="text-align: center;" class="col-md-6">
                 <!-- Your second column here -->
-                <table>
+                <table class="arrow_table">
                     <thead>
                         <tr>
-                            <th align="center"><img class="center" id="arrow" src="symbols/arrow_left.png"></th>
+                            <th colspan="1" align="center"><img class="center" id="arrow" src="symbols/arrow_left.png"></th>
                         </tr>
                         <tr>
-                            <th class="large_text">100 m</th>
+                            <th colspan="1" class="large_text">100 m</th>
                         </tr>
                     </thead>
                 </table>
@@ -54,10 +90,10 @@
         <table id="footer_table">
             <thead>
                 <tr>
-                    <th align="center" class="labels_footer_table cancel_table_field">
+                    <th align="center" class="labels_footer_table cancel_table_field btn-danger">
                         <label id="label_cancel"></label>
                     </th>
-                    <th align="center" class="labels_footer_table next_step_table_field">
+                    <th align="center" class="labels_footer_table next_step_table_field btn-primary">
                         <label id="label_next_step"></label>
                     </th>
                 </tr>

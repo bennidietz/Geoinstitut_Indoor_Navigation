@@ -72,8 +72,8 @@ class Room {
 class Institute {
     constructor(json) {
         this.name = json["name_de"];
-        this.getName();
         this.json = json;
+        this.getName();
         this.id = json["id"];
     }
 
@@ -102,9 +102,11 @@ function api(type, query) {
                         if (!rooms_order_after_level.hasOwnProperty(data[i]["level"])) {
                             rooms_order_after_level[data[i]["level"]] = [];
                         }
-                        var room = new Room(data[i]);
-                        rooms_order_after_level[data[i]["level"]].push(room)
-                        rooms_order_after_roomnr[data[i]["no"]] = room;
+                        if (data[i].hasOwnProperty("no")) {
+                            var room = new Room(data[i]);
+                            rooms_order_after_level[data[i]["level"]].push(room)
+                            rooms_order_after_roomnr[data[i]["no"]] = room;
+                        }
                     }
                     onRoomsLoaded();
                 } else if (stringsAreEqual(query, "all") && stringsAreEqual(type, "institutes")) {
@@ -151,7 +153,10 @@ function onRoomsLoaded() {
         $("#value_level").text($("#etagen_btn" + Number(from_room_object.level)).text())
         $("#etagen_btn" + Number(from_room_object.level)).removeClass("btn-default").addClass("btn-danger");
         if (!to_room_object) {
-            setImageWithoutRoute(from_room_object.level);
+            setImageWithoutRoute((from_room_object.level - 2) + "");
+        } else {
+            // TODO: set image with route
+            setImageWithoutRoute((from_room_object.level - 2) + "");
         }
     } else {
         setImageWithoutRoute(3);
@@ -166,6 +171,12 @@ function onRoomsLoaded() {
     } else {
         $(".arrow_table").css("display", "none");
         $("#autocomplete_search").attr("placeholder", strings["autocomplete_placeholder"][language_index]);
+        console.log(rooms_order_after_roomnr)
+        var autocomplete_options = [];
+        for (var i in rooms_order_after_roomnr) {
+            autocomplete_options.push(i + " - " + rooms_order_after_roomnr[i]["institute"]["name"])
+        }
+        autocomplete(document.getElementById("autocomplete_search"), autocomplete_options);
     }
     if (!smartphone) {
         $('.header').removeClass('header').addClass('header_desktop');
@@ -236,7 +247,7 @@ function getImageURLForLevel(level) {
     var img_name = "EG.png"; // default value
     switch (level) {
         case "-1":
-            //img_name = "EG.png";
+            img_name = "KG.png";
             break;
         case "0":
             img_name = "EG.png";
@@ -295,7 +306,8 @@ function autocomplete(inp, arr) {
         /*for each item in the array...*/
         for (i = 0; i < arr.length; i++) {
             /*check if the item starts with the same letters as the text field value:*/
-            if (arr[i].substr(0, val.length).toUpperCase() == val.toUpperCase()) {
+            //here
+            if (oneOfWordsStartsWith(arr[i], val)) {
                 /*create a DIV element for each matching element:*/
                 b = document.createElement("DIV");
                 /*make the matching letters bold:*/
@@ -310,7 +322,7 @@ function autocomplete(inp, arr) {
                     /*close the list of autocompleted values,
                     (or any other open lists of autocompleted values:*/
                     closeAllLists();
-                    setToRoom(inp.value);
+                    setToRoom(inp.value.substr(0, inp.value.indexOf("-")).replace(" ", ""));
                 });
                 a.appendChild(b);
             }
@@ -376,8 +388,19 @@ function autocomplete(inp, arr) {
     });
 }
 
-/*An array containing all the country names in the world:*/
-var countries = ["220", "110", "021", "02", "450", "234"];
-
-/*initiate the autocomplete function on the "autocomplete_search" element, and pass along the countries array as possible autocomplete values:*/
-autocomplete(document.getElementById("autocomplete_search"), countries);
+function oneOfWordsStartsWith(autocomplete_string, starting_string) {
+    starting_string = starting_string.trim();
+    var search_for = starting_string.split(" ");
+    var words = autocomplete_string.split(/-| /);
+    var count = 0;
+    for (var j in search_for) {
+        for (var i in words) {
+            //words[i] = words[i].replace(" ", "");
+            if (words[i].substr(0, search_for[j].length).toUpperCase() == search_for[j].toUpperCase()) {
+                count++;
+            }
+        }
+    }
+    if (count == search_for.length) return true;
+    return false;
+}

@@ -156,10 +156,10 @@ function onRoomsLoaded() {
         $("#value_level").text($("#etagen_btn" + Number(from_room_object.level)).text())
         $("#etagen_btn" + Number(from_room_object.level)).removeClass("btn-default").addClass("btn-danger");
         if (!to_room_object) {
-            setImageWithoutRoute((from_room_object.level - 2) + "", null);
+            setImageWithoutRoute(from_room_object.level, null);
         } else {
             // TODO: set image with route
-            setImageWithoutRoute((from_room_object.level - 2) + "", null);
+            setImageWithoutRoute(from_room_object.level, null);
         }
         etagen_nummer = from_room_object.level;
     } else {
@@ -216,9 +216,7 @@ function stringsAreEqual(str1, str2) {
 
 $(".etagen_btn").on("click", function() {
     etagen_nummer = Number(this.id.replace("etagen_btn", ""))
-    if (etagen_nummer == 1) {
-        setImageWithoutRoute("-1", null);
-    } else setImageWithoutRoute((etagen_nummer - 2) + "", null)
+    setImageWithoutRoute(etagen_nummer, null)
 });
 
 window.onscroll = function() { remainHeaderOnTop() };
@@ -245,7 +243,11 @@ function setImageWithoutRoute(level, roomHighlighted) {
         ctx.drawImage(img, 0, 0, img.width, img.height, 0, 0, screen_width, screen_width);
         if (from_room_object && etagen_nummer == from_room_object.level) {
             // draw circle at the current position of the user
-            drawCircle(ctx, from_room_object.door_coordinates[0] * canvas.width / 100, from_room_object.door_coordinates[1] * canvas.height / 100)
+            drawCircle(ctx, from_room_object.door_coordinates[0] * canvas.width / 100, from_room_object.door_coordinates[1] * canvas.height / 100, "rgba(255, 0, 0, 0.6)")
+        }
+        if (to_room_object && etagen_nummer == to_room_object.level) {
+            // draw circle at the destination
+            drawCircle(ctx, to_room_object.door_coordinates[0] * canvas.width / 100, to_room_object.door_coordinates[1] * canvas.height / 100, "rgba(34,139,34, 0.6)")
         }
         if (roomHighlighted) {
             highLightRoom(ctx, roomHighlighted.spatial_extend, canvas.width, canvas.height)
@@ -262,12 +264,12 @@ function highLightRoom(ctx, spatial_extend, cvwidth, cvheight) {
     ctx.stroke();
 }
 
-function drawCircle(ctx, centerX, centerY) {
+function drawCircle(ctx, centerX, centerY, color_string) {
     ctx.beginPath();
-    ctx.arc(centerX, centerY, 15, 0, 2 * Math.PI, false);
-    ctx.fillStyle = 'red';
+    ctx.arc(centerX, centerY, 17, 0, 2 * Math.PI, false);
+    ctx.fillStyle = color_string;
     ctx.fill();
-    ctx.lineWidth = 5;
+    ctx.lineWidth = 1;
     ctx.strokeStyle = '#003300';
     ctx.stroke();
 }
@@ -297,7 +299,7 @@ canvas.addEventListener('click', function(e) {
     for (var i in rooms_order_after_level[etagen_nummer]) {
         var room_obj = rooms_order_after_level[etagen_nummer][i];
         if (pointIsWithinSpatialExtend([mouseX, mouseY], room_obj.spatial_extend)) {
-            setImageWithoutRoute((etagen_nummer - 2) + "", room_obj)
+            setImageWithoutRoute(etagen_nummer, room_obj)
             $("#room_details").css("display", "block");
             $("#room_details").html("<b>" + strings["room_nr"][language_index] + ":</b> " + room_obj.room_nr + "<span style='padding-left:25px'><btn class='btn btn-primary' onclick='setToRoom(" + room_obj.room_nr + ")' style='font-size:0.8em'>=> " + strings["navigate_to_room"][language_index] + "</btn></span><br>" +
                 "<b>" + strings["institute"][language_index] + ": </b>" + room_obj.institute.name + "")
@@ -318,25 +320,32 @@ function pointIsWithinSpatialExtend(point, spatial_extend) {
 function getImageURLForLevel(level) {
     var img_name = "EG.png"; // default value
     switch (level) {
-        case "-1":
+        case "1":
+        case 1:
             img_name = "KG.png";
             break;
-        case "0":
+        case "2":
+        case 2:
             img_name = "EG.png";
             break;
-        case "1":
+        case "3":
+        case 3:
             img_name = "1OG.png";
             break;
-        case "2":
+        case "4":
+        case 4:
             img_name = "2OG.png";
             break;
-        case "3":
+        case "5":
+        case 5:
             img_name = "3OG.png";
             break;
-        case "4":
+        case "6":
+        case 6:
             img_name = "4OG.png";
             break;
-        case "5":
+        case "7":
+        case 7:
             img_name = "5OG.png";
             break;
         default:

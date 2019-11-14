@@ -16,6 +16,7 @@ if (to_room) {
 var institutes = {};
 var rooms_order_after_level = {};
 var rooms_order_after_roomnr = {};
+var etagen_nummer = null;
 
 var smartphone = true;
 var mapfullwidth = true;
@@ -41,6 +42,9 @@ if (lang) {
     lang = "de";
 }
 
+var from_room_object = null;
+var to_room_object = null;
+
 $('#language_spinner').on('change', function() {
     var current_loc = window.location + "";
     var end_loc = current_loc.substr(0, current_loc.indexOf(".html") + 5) + "?" + language_param_str + "=" + this.value;
@@ -61,7 +65,7 @@ class Room {
         this.level = json["level"];
         this.door_coordinates = [json["doorX"], json["doorY"]];
         this.spatial_extend = [
-            [json["x1"], json["y2"]],
+            [json["x1"], json["y1"]],
             [json["x2"], json["y2"]]
         ];
         this.openingHours = [json["hoursStart"], json["hoursEnd"]];
@@ -133,7 +137,6 @@ function onRoomsLoaded() {
     // rooms from database are loaded
     from_room_object = rooms_order_after_roomnr[from_room];
     to_room_object = rooms_order_after_roomnr[to_room];
-    console.log(from_room_object)
 
     document.title = strings["title_application"][language_index];
     $("#label_cancel").text(strings["cancel"][language_index])
@@ -153,13 +156,15 @@ function onRoomsLoaded() {
         $("#value_level").text($("#etagen_btn" + Number(from_room_object.level)).text())
         $("#etagen_btn" + Number(from_room_object.level)).removeClass("btn-default").addClass("btn-danger");
         if (!to_room_object) {
-            setImageWithoutRoute((from_room_object.level - 2) + "");
+            setImageWithoutRoute((from_room_object.level - 2) + "", null);
         } else {
             // TODO: set image with route
-            setImageWithoutRoute((from_room_object.level - 2) + "");
+            setImageWithoutRoute((from_room_object.level - 2) + "", null);
         }
+        etagen_nummer = from_room_object.level;
     } else {
-        setImageWithoutRoute(3);
+        setImageWithoutRoute(3, null);
+        etagen_nummer = 3;
     }
     if (to_room_object) {
         $("#label_to_room").text(strings["to_room"][language_index])
@@ -171,7 +176,6 @@ function onRoomsLoaded() {
     } else {
         $(".arrow_table").css("display", "none");
         $("#autocomplete_search").attr("placeholder", strings["autocomplete_placeholder"][language_index]);
-        console.log(rooms_order_after_roomnr)
         var autocomplete_options = [];
         for (var i in rooms_order_after_roomnr) {
             autocomplete_options.push(i + " - " + rooms_order_after_roomnr[i]["institute"]["name"])
@@ -211,10 +215,10 @@ function stringsAreEqual(str1, str2) {
 }
 
 $(".etagen_btn").on("click", function() {
-    var etagen_nummer = Number(this.id.replace("etagen_btn", ""))
+    etagen_nummer = Number(this.id.replace("etagen_btn", ""))
     if (etagen_nummer == 1) {
-        setImageWithoutRoute("-1");
-    } else setImageWithoutRoute((etagen_nummer - 2) + "")
+        setImageWithoutRoute("-1", null);
+    } else setImageWithoutRoute((etagen_nummer - 2) + "", null)
 });
 
 window.onscroll = function() { remainHeaderOnTop() };
@@ -230,7 +234,7 @@ function remainHeaderOnTop() {
     }
 }
 
-function setImageWithoutRoute(level) {
+function setImageWithoutRoute(level, roomHighlighted) {
     var ctx = document.getElementById('canvas').getContext('2d');
     var canvas = document.getElementById('canvas');
     if (!mapfullwidth) screen_width = screen_width * 4.5 / 10; // Desktop Version
@@ -239,8 +243,76 @@ function setImageWithoutRoute(level) {
     var img = new Image();
     img.onload = function() {
         ctx.drawImage(img, 0, 0, img.width, img.height, 0, 0, screen_width, screen_width);
+        if (from_room_object && etagen_nummer == from_room_object.level) {
+            // draw circle at the current position of the user
+            drawCircle(ctx, from_room_object.door_coordinates[0] * canvas.width / 100, from_room_object.door_coordinates[1] * canvas.height / 100)
+        }
+        if (roomHighlighted) {
+            highLightRoom(ctx, roomHighlighted.spatial_extend, canvas.width, canvas.height)
+        }
     };
     img.src = getImageURLForLevel(level);
+}
+
+function highLightRoom(ctx, spatial_extend, cvwidth, cvheight) {
+    ctx.beginPath();
+    ctx.rect(spatial_extend[0][0] * cvwidth / 100, spatial_extend[0][1] * cvheight / 100, (spatial_extend[1][0] - spatial_extend[0][0]) * cvwidth / 100, (spatial_extend[1][1] - spatial_extend[0][1]) * cvheight / 100);
+    ctx.fillStyle = "rgba(124, 252, 0, 0.4)"; // green with transparence
+    ctx.fill();
+    ctx.stroke();
+}
+
+function drawCircle(ctx, centerX, centerY) {
+    ctx.beginPath();
+    ctx.arc(centerX, centerY, 15, 0, 2 * Math.PI, false);
+    ctx.fillStyle = 'red';
+    ctx.fill();
+    ctx.lineWidth = 5;
+    ctx.strokeStyle = '#003300';
+    ctx.stroke();
+}
+
+var canvas = document.querySelector('canvas');
+canvas.addEventListener('click', function(e) {
+    if (to_room_object) {
+        return;
+    }
+    var totalOffsetX = 0;
+    var totalOffsetY = 0;
+    var canvasX = 0;
+    var canvasY = 0;
+    var currentElement = this;
+
+    do {
+        totalOffsetX += currentElement.offsetLeft - currentElement.scrollLeft;
+        totalOffsetY += currentElement.offsetTop - currentElement.scrollTop;
+    }
+    while (currentElement = currentElement.offsetParent)
+
+    canvasX = event.pageX - totalOffsetX;
+    canvasY = event.pageY - totalOffsetY;
+
+    var mouseX = (canvasX / this.width) * 100;
+    var mouseY = (canvasY / this.height) * 100;
+    for (var i in rooms_order_after_level[etagen_nummer]) {
+        var room_obj = rooms_order_after_level[etagen_nummer][i];
+        if (pointIsWithinSpatialExtend([mouseX, mouseY], room_obj.spatial_extend)) {
+            setImageWithoutRoute((etagen_nummer - 2) + "", room_obj)
+            $("#room_details").css("display", "block");
+            $("#room_details").html("<b>" + strings["room_nr"][language_index] + ":</b> " + room_obj.room_nr + "<span style='padding-left:25px'><btn class='btn btn-primary' onclick='setToRoom(" + room_obj.room_nr + ")' style='font-size:0.8em'>=> " + strings["navigate_to_room"][language_index] + "</btn></span><br>" +
+                "<b>" + strings["institute"][language_index] + ": </b>" + room_obj.institute.name + "")
+
+        }
+    }
+});
+
+function pointIsWithinSpatialExtend(point, spatial_extend) {
+    if (point[0] >= spatial_extend[0][0] && point[0] <= spatial_extend[1][0] &&
+        point[1] >= spatial_extend[0][1] && point[1] <= spatial_extend[1][1]) {
+        return true;
+    } else {
+        return false;
+    }
 }
 
 function getImageURLForLevel(level) {

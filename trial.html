@@ -81,7 +81,7 @@
                             <th colspan="1" align="center"><img class="center" id="arrow" src="symbols/arrow_left.png"></th>
                         </tr>
                         <tr>
-                            <th colspan="1" class="large_text">100 m</th>
+                            <th colspan="1" class="large_text" id="distance">100 m</th>
                         </tr>
                     </thead>
                 </table>
@@ -93,10 +93,10 @@
         <table id="footer_table">
             <thead>
                 <tr>
-                    <th align="center" class="labels_footer_table cancel_table_field btn-danger">
+                    <th onclick="cancelClicked()" align="center" class="labels_footer_table cancel_table_field btn-danger">
                         <label id="label_cancel"></label>
                     </th>
-                    <th align="center" class="labels_footer_table next_step_table_field btn-primary">
+                    <th onclick="nextStepClicked()" id="next_step" align="center" class="labels_footer_table next_step_table_field btn-primary">
                         <label id="label_next_step"></label>
                     </th>
                 </tr>

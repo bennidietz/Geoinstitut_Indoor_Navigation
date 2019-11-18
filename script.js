@@ -16,7 +16,9 @@ if (to_room) {
 var institutes = {};
 var rooms_order_after_level = {};
 var rooms_order_after_roomnr = {};
+var paths = {};
 var etagen_nummer = null;
+var shortest_nav_path = null;
 
 var smartphone = true;
 var mapfullwidth = true;
@@ -63,7 +65,7 @@ class Room {
         this.category = json["category"];
         this.institute = institutes[json["institute"]];
         this.level = json["level"];
-        this.door_coordinates = [json["doorX"], json["doorY"]];
+        this.door_coordinates = [Number(json["doorX"]), Number(json["doorY"])];
         this.spatial_extend = [
             [json["x1"], json["y1"]],
             [json["x2"], json["y2"]]
@@ -90,6 +92,40 @@ class Institute {
     }
 }
 
+class Paths {
+    constructor(level, json) {
+        this.startPoint = [Number(json["start"][0]), Number(json["start"][1])];
+        this.endPoint = [Number(json["end"][0]), Number(json["end"][1])];
+        this.level = level;
+        this.direction = [roundWithTwoDecimals(this.endPoint[0] - this.startPoint[0]), roundWithTwoDecimals(this.endPoint[1] - this.startPoint[1])]; // direction of vector
+    }
+}
+
+function getNearestPointOnPath(pointA, pathA) {
+    var start_coor = pathA.startPoint;
+    var direction = pathA.direction;
+    // source: https://www.youtube.com/watch?v=mdtJjvsYdQg
+    var zwischen = [start_coor[0] - pointA[0], start_coor[1] - pointA[1]];
+    zwischen = zwischen[0] * direction[0] + zwischen[1] * direction[1]; // Skalarprodukt von Differenz und Richtungvektor
+    var sp_rv_vr = direction[0] * direction[0] + direction[1] * direction[1];
+    var r = (-1) * zwischen / sp_rv_vr;
+    if (r > 1) r = 1;
+    if (r < 0) r = 1; // abfangen, damit der Punkt nicht außerhalb der Linie liegt
+    return resultierender_punkt = getCertainPointOnPaths(start_coor, direction, r);
+}
+
+function distanceBetweenTwoPoints(start_coor, end_coor) {
+    return roundWithTwoDecimals(Math.sqrt(Math.pow((start_coor[0] - end_coor[0]), 2) + Math.pow((start_coor[1] - end_coor[1]), 2)));
+}
+
+function roundWithTwoDecimals(number) {
+    return Math.round(number * 100) / 100;
+}
+
+function getCertainPointOnPaths(start_coor, direction, r) {
+    return [roundWithTwoDecimals(start_coor[0] + direction[0] * r), roundWithTwoDecimals(start_coor[1] + direction[1] * r)];
+}
+
 function api(type, query) {
     var authorization_key = '1234';
     var url = 'https://christian-terbeck.de/projects/ba/request.php';
@@ -101,6 +137,7 @@ function api(type, query) {
         timeout: 60000,
         success: function(data) {
             if (data.status == 'success') {
+                //console.log(data)
                 if (stringsAreEqual(query, "all") && stringsAreEqual(type, "rooms")) {
                     for (var i in data) {
                         if (!rooms_order_after_level.hasOwnProperty(data[i]["level"])) {
@@ -119,6 +156,7 @@ function api(type, query) {
                             institutes[data[i]["id"]] = new Institute(data[i])
                         }
                     }
+                    api("rooms", "all")
                 }
             }
         },
@@ -149,6 +187,7 @@ function onRoomsLoaded() {
     $("#etagen_btn6").text(strings["floor_6"][language_index])
     $("#etagen_btn7").text(strings["floor_7"][language_index])
     if (from_room_object) {
+        etagen_nummer = from_room_object.level;
         $("#label_from_room").text(strings["from_room"][language_index])
         $("#value_from_room").text(from_room)
             // get level of room
@@ -157,14 +196,18 @@ function onRoomsLoaded() {
         $("#etagen_btn" + Number(from_room_object.level)).removeClass("btn-default").addClass("btn-danger");
         if (!to_room_object) {
             setImageWithoutRoute(from_room_object.level, null);
+            $("#next_step").remove();
+            $("#label_cancel").text(strings["reset_position"][language_index])
         } else {
             // TODO: set image with route
-            setImageWithoutRoute(from_room_object.level, null);
+            calculateRoute(from_room_object, to_room_object);
         }
-        etagen_nummer = from_room_object.level;
     } else {
-        setImageWithoutRoute(3, null);
-        etagen_nummer = 3;
+        setImageWithoutRoute(2, null);
+        etagen_nummer = 2;
+        if (!to_room_object) {
+            $(".footer").css("display", "none")
+        }
     }
     if (to_room_object) {
         $("#label_to_room").text(strings["to_room"][language_index])
@@ -201,9 +244,357 @@ function onRoomsLoaded() {
     }
 }
 
+function calculateRoute(roomA, roomB) {
+    var level_string = "1OG";
+    var detailsPathA = getDetailsOfNearestPath(roomA.door_coordinates, paths[level_string]);
+    var detailsPathB = getDetailsOfNearestPath(roomB.door_coordinates, paths[level_string]);
+
+    shortest_nav_path = getShortestPathBetweenPointsOnPaths(detailsPathA["point"], detailsPathA["path_index"], detailsPathB["point"], detailsPathB["path_index"], paths[level_string]);
+    if (etagen_nummer == from_room_object.level || etagen_nummer == to_room_object.level) {
+        shortest_nav_path["points_on_route"].splice(0, 0, from_room_object.door_coordinates);
+        shortest_nav_path["points_on_route"].push(to_room_object.door_coordinates)
+    }
+    displayFullNavigation(from_room_object.level, shortest_nav_path);
+}
+
+function displayDestinationReached(direction_of_desination) {
+    $("#arrow").css("display", "none");
+    $("#distance").css("display", "none");
+}
+
+function displayArrow(direction, length) {
+    length = Math.round(length * 36 / 100)
+    var file = "symbols/";
+    switch (direction) {
+        case 0:
+            //top
+            file += "arrow_top";
+            break;
+        case 1:
+            //right
+            file += "arrow_right";
+            break;
+        case 2:
+            //bottom
+            file += "arrow_down";
+            break;
+        case 3:
+            //left
+            file += "arrow_left";
+            break;
+        default:
+            break;
+    }
+    $("#arrow").attr("src", file + ".png");
+    $("#distance").text(length + " m");
+}
+
+function getShortestPathBetweenPointsOnPaths(pointA, pathA_index, pointB, pathB_index, path_array) {
+    var path_connections = getConectionArrayPaths(path_array);
+    var all_possible_paths = getAllPossiblePaths(path_connections, [
+        [Number(pathA_index)]
+    ], Number(pathB_index));
+    return getShortestPath(path_array, all_possible_paths, pointA, pointB);
+}
+
+function getShortestPath(all_paths, all_paths_indexes, pointA, pointB) {
+    var distance_path = 1000; // unrealistic maximal distance
+    var shortest_path = {
+        "points_on_route": null,
+        "dist": null,
+        "directions": null,
+    }
+    for (var j in all_paths_indexes) {
+        var distances = [];
+        var directions = [];
+        if (all_paths_indexes[j].length < 2) {
+            shortest_path["points_on_route"] = [pointA, pointB];
+            shortest_path["dist"] = [distanceBetweenTwoPoints(pointA, pointB)];
+            shortest_path["directions"] = [getDirectionOfRoute(pointA, pointB)];
+            return shortest_path;
+        }
+        var tmp_point = pointWherePathsAreConnected(all_paths[all_paths_indexes[j][0]], all_paths[all_paths_indexes[j][1]]);
+        var tmp_pointsArray = [pointA, tmp_point];
+        var tmp_distance = distanceBetweenTwoPoints(pointA, tmp_point);
+        distances.push(tmp_distance)
+        directions.push(getDirectionOfRoute(pointA, tmp_point))
+        for (var i = 1; i < all_paths_indexes[j].length - 1; i++) {
+            var dist = distanceBetweenTwoPoints(tmp_point, pointWherePathsAreConnected(all_paths[all_paths_indexes[j][i]], all_paths[all_paths_indexes[j][i + 1]]));
+            tmp_distance += dist;
+            distances.push(dist)
+            directions.push(getDirectionOfRoute(tmp_point, pointWherePathsAreConnected(all_paths[all_paths_indexes[j][i]], all_paths[all_paths_indexes[j][i + 1]])))
+            tmp_point = pointWherePathsAreConnected(all_paths[all_paths_indexes[j][i]], all_paths[all_paths_indexes[j][i + 1]]);
+            tmp_pointsArray.push(tmp_point);
+        }
+        tmp_distance += distanceBetweenTwoPoints(tmp_point, pointB);
+        distances.push(distanceBetweenTwoPoints(tmp_point, pointB))
+        directions.push(getDirectionOfRoute(tmp_point, pointB))
+        tmp_pointsArray.push(pointB)
+        if (tmp_distance < distance_path) {
+            distance_path = tmp_distance;
+            shortest_path["points_on_route"] = tmp_pointsArray;
+            shortest_path["dist"] = distances;
+            shortest_path["directions"] = directions;
+        }
+    }
+    return shortest_path;
+}
+
+// returns:
+// top: 0; right: 1; bottom: 2; left: 3
+function getDirectionOfRoute(from_point, to_point) {
+    var x = to_point[0] - from_point[0]
+    var y = to_point[1] - from_point[1]
+    if (x != 0) {
+        if (x > 0) {
+            return 1;
+        } else {
+            return 3;
+        }
+    }
+    if (y != 0) {
+        if (y > 0) {
+            return 2;
+        } else {
+            return 0;
+        }
+    }
+}
+
+function getAllPossiblePaths(connections, path_lines, destiny_path_index) {
+    var all_routes_finsihed = true;
+    for (var j in path_lines) {
+        if (path_lines[j][path_lines[j].length - 1] != destiny_path_index) {
+            all_routes_finsihed = false;
+            var direct_con = getAllDirectConnections(connections, path_lines[j][path_lines[j].length - 1]);
+            for (var i in direct_con) {
+                if (path_lines[j].indexOf(direct_con[i]) > -1) {
+                    // path will not be considered
+                } else {
+                    // path reached destination
+                    var tmp = [];
+                    for (var k in path_lines[j]) {
+                        tmp.push(path_lines[j][k])
+                    }
+                    tmp.push((direct_con[i]));
+                    path_lines.push(tmp)
+                }
+            }
+            path_lines.splice(j, 1);
+        }
+    }
+    if (all_routes_finsihed) {
+        return path_lines;
+    } else {
+        return getAllPossiblePaths(connections, path_lines, destiny_path_index)
+    }
+}
+
+function getAllDirectConnections(connections, path_index) {
+    var paths = [];
+    for (var i in connections) {
+        if (connections[i][0] == path_index && paths.indexOf(connections[i][1]) < 0) {
+            paths.push(connections[i][1]);
+        } else if (connections[i][1] == path_index && paths.indexOf(connections[i][0]) < 0) {
+            paths.push(connections[i][0]);
+        }
+    }
+    return paths
+}
+
+function pathsInConnectedPathArray(pathA_index, pathB_index, connected_paths) {
+    for (var i in connected_paths) {
+        if (connected_paths[i].indexOf(Number(pathA_index)) > -1 &&
+            connected_paths[i].indexOf(Number(pathB_index)) > -1) {
+            return true;
+        }
+    }
+    return false;
+}
+
+function getConectionArrayPaths(path_array) {
+    var connected_paths = [];
+    for (var i in path_array) {
+        for (var j in path_array) {
+            if (i != j && pointWherePathsAreConnected(path_array[i], path_array[j]) &&
+                !pathsInConnectedPathArray(i, j, connected_paths)) {
+                connected_paths.push([Number(i), Number(j)]);
+            }
+        }
+    }
+    return connected_paths;
+}
+
+function pointWherePathsAreConnected(pathA, pathB) {
+    var inter = line_intersect(pathA.startPoint[0], pathA.startPoint[1], pathA.endPoint[0], pathA.endPoint[1],
+        pathB.startPoint[0], pathB.startPoint[1], pathB.endPoint[0], pathB.endPoint[1]);
+    if (inter)  {
+        return [inter["x"], inter["y"]];
+    } else {
+        return null
+    }
+}
+
+
+function line_intersect(x1, y1, x2, y2, x3, y3, x4, y4) {
+    var ua, ub, denom = (y4 - y3) * (x2 - x1) - (x4 - x3) * (y2 - y1);
+    if (denom == 0) {
+        return null;
+    }
+    ua = ((x4 - x3) * (y1 - y3) - (y4 - y3) * (x1 - x3)) / denom;
+    ub = ((x2 - x1) * (y1 - y3) - (y2 - y1) * (x1 - x3)) / denom;
+    if (ub < 0) return null;
+    if (ua < 0) return null; // own modification: only consider points that are within the line (not like a vector)
+    return {
+        x: x1 + ua * (x2 - x1),
+        y: y1 + ua * (y2 - y1),
+        seg1: ua >= 0 && ua <= 1,
+        seg2: ub >= 0 && ub <= 1
+    };
+}
+
+
+function displayFullNavigation(level, shortest_path) {
+    if (shortest_path["directions"].length == 0 && shortest_path["points_on_route"].length > 1) {
+        var direction_of_desination = getDirectionOfRoute(shortest_path["points_on_route"][0], shortest_path["points_on_route"][1])
+        shortest_path["points_on_route"] = shortest_path["points_on_route"].splice(1);
+        displayDestinationReached(direction_of_desination)
+    } else if (shortest_path["directions"].length > 0) {
+        displayArrow(shortest_path["directions"][0], shortest_path["dist"][0]);
+    }
+
+    var points_on_route = shortest_path["points_on_route"];
+    var ctx = document.getElementById('canvas').getContext('2d');
+    var canvas = document.getElementById('canvas');
+    if (!mapfullwidth) screen_width = screen_width * 4.5 / 10; // Desktop Version
+    canvas.width = screen_width;
+    canvas.height = screen_width;
+    var img = new Image();
+    img.onload = function() {
+        ctx.drawImage(img, 0, 0, img.width, img.height, 0, 0, screen_width, screen_width);
+        if (from_room_object && etagen_nummer == from_room_object.level) {
+            // draw circle at the current position of the user
+            drawCircle(ctx, points_on_route[0][0] * canvas.width / 100, points_on_route[0][1] * canvas.height / 100, "rgba(255, 0, 0, 0.6)")
+        }
+        if (to_room_object && etagen_nummer == to_room_object.level) {
+            // draw circle at the destination
+            drawCircle(ctx, to_room_object.door_coordinates[0] * canvas.width / 100, to_room_object.door_coordinates[1] * canvas.height / 100, "rgba(34,139,34, 0.6)")
+        }
+        displayRouteBetweenPoints(ctx, points_on_route, canvas.width, canvas.height);
+    };
+    img.src = getImageURLForLevel(level);
+}
+
+function nextStepClicked() {
+
+    if (shortest_nav_path["points_on_route"].length > shortest_nav_path["dist"].length + 2) {
+        shortest_nav_path["dist"] = shortest_nav_path["dist"].splice(1)
+        shortest_nav_path["directions"] = shortest_nav_path["directions"].splice(1)
+        shortest_nav_path["points_on_route"] = shortest_nav_path["points_on_route"].splice(2)
+    } else {
+        shortest_nav_path["dist"] = shortest_nav_path["dist"].splice(1)
+        shortest_nav_path["directions"] = shortest_nav_path["directions"].splice(1)
+        shortest_nav_path["points_on_route"] = shortest_nav_path["points_on_route"].splice(1)
+    }
+    displayFullNavigation(etagen_nummer, shortest_nav_path)
+}
+
+function displayRouteBetweenPoints(ctx, full_path, imageWidth, imageHeigth) {
+    ctx.beginPath();
+    for (var i = 0; i < full_path.length - 1; i++) {
+        ctx.moveTo(full_path[i][0] * imageWidth / 100, full_path[i][1] * imageHeigth / 100);
+        ctx.lineTo(full_path[i + 1][0] * imageWidth / 100, full_path[i + 1][1] * imageHeigth / 100);
+    }
+    ctx.lineWidth = 5;
+    ctx.strokeStyle = "red";
+    ctx.stroke();
+}
+
+function getDetailsOfNearestPath(point, path_array) {
+    var min_distance = 100; // maximal possible distance in graph
+    var min_point = null;
+    var min_path = null;
+    for (var i in path_array) {
+        var tmp_point = getNearestPointOnPath(point, path_array[i]);
+        var tmp_dist = distanceBetweenTwoPoints(point, tmp_point);
+        if (tmp_dist < min_distance) {
+            min_point = tmp_point;
+            min_distance = tmp_dist;
+            min_path = i;
+        }
+    }
+    return {
+        "point": min_point,
+        "path_index": min_path,
+        "distance": min_distance
+    };
+}
+
+function cancelClicked() {
+    if (to_room_object) {
+        setToRoom(null);
+    } else {
+        setFromRoom(null);
+    }
+}
+
 function storeRoomsOfBuilding() {
+    var paths_data = {
+        "EG": [{
+            "start": ["5.40", "24.04"],
+            "end": ["81.27", "24.04"],
+            "color": "blue"
+        }, {
+            "start": ["81.27", "5.03"],
+            "end": ["81.27", "87.35"],
+            "color": "red"
+        }, {
+            "start": ["18.90", "94.69"],
+            "end": ["18.90", "24.04"],
+            "color": "pink"
+        }, {
+            "start": ["18.90", "51.39"],
+            "end": ["81.27", "51.39"],
+            "color": "yellow"
+        }, {
+            "start": ["63.74", "51.39"],
+            "end": ["63.74", "87.35"],
+            "color": "cyan"
+        }],
+        "1OG": [{
+            "start": ["5.40", "24.04"],
+            "end": ["81.27", "24.04"],
+            "color": "blue"
+        }, {
+            "start": ["81.27", "5.14"],
+            "end": ["81.27", "80.84"],
+            "color": "red"
+        }, {
+            "start": ["94.69", "80.84"],
+            "end": ["18.90", "80.84"],
+            "color": "green"
+        }, {
+            "start": ["18.90", "94.69"],
+            "end": ["18.90", "24.04"],
+            "color": "pink"
+        }, {
+            "start": ["18.90", "51.39"],
+            "end": ["81.27", "51.39"],
+            "color": "yellow"
+        }, {
+            "start": ["54.01", "51.39"],
+            "end": ["54.01", "80.84"],
+            "color": "cyan"
+        }]
+    };
+    for (var level in paths_data) {
+        paths[level] = [];
+        for (var i in paths_data[level]) {
+            paths[level].push(new Paths(level, paths_data[level][i]));
+        }
+    }
     api("institutes", "all")
-    api("rooms", "all")
+        //api("paths", "all")
 }
 
 function stringsAreEqual(str1, str2) {
@@ -216,7 +607,11 @@ function stringsAreEqual(str1, str2) {
 
 $(".etagen_btn").on("click", function() {
     etagen_nummer = Number(this.id.replace("etagen_btn", ""))
-    setImageWithoutRoute(etagen_nummer, null)
+    if (from_room_object && to_room_object) {
+        displayFullNavigation(etagen_nummer, shortest_nav_path);
+    } else {
+        setImageWithoutRoute(etagen_nummer, null)
+    }
 });
 
 window.onscroll = function() { remainHeaderOnTop() };
@@ -276,7 +671,7 @@ function drawCircle(ctx, centerX, centerY, color_string) {
 
 var canvas = document.querySelector('canvas');
 canvas.addEventListener('click', function(e) {
-    if (to_room_object) {
+    if (to_room_object && from_room_object) {
         return;
     }
     var totalOffsetX = 0;
@@ -301,9 +696,13 @@ canvas.addEventListener('click', function(e) {
         if (pointIsWithinSpatialExtend([mouseX, mouseY], room_obj.spatial_extend)) {
             setImageWithoutRoute(etagen_nummer, room_obj)
             $("#room_details").css("display", "block");
-            $("#room_details").html("<b>" + strings["room_nr"][language_index] + ":</b> " + room_obj.room_nr + "<span style='padding-left:25px'><btn class='btn btn-primary' onclick='setToRoom(" + room_obj.room_nr + ")' style='font-size:0.8em'>=> " + strings["navigate_to_room"][language_index] + "</btn></span><br>" +
-                "<b>" + strings["institute"][language_index] + ": </b>" + room_obj.institute.name + "")
-
+            if (from_room_object) {
+                $("#room_details").html("<b>" + strings["room_nr"][language_index] + ":</b> " + room_obj.room_nr + "<span style='padding-left:25px'><btn class='btn btn-primary' onclick='setToRoom(" + room_obj.room_nr + ")' style='font-size:0.8em'>=> " + strings["navigate_to_room"][language_index] + "</btn></span><br>" +
+                    "<b>" + strings["institute"][language_index] + ": </b>" + room_obj.institute.name + "")
+            } else {
+                $("#room_details").html("<b>" + strings["room_nr"][language_index] + ":</b> " + room_obj.room_nr + "<span style='padding-left:25px'><btn class='btn btn-primary' onclick='setFromRoom(" + room_obj.room_nr + ")' style='font-size:0.8em'>=> " + strings["start_from_here"][language_index] + "</btn></span><br>" +
+                    "<b>" + strings["institute"][language_index] + ": </b>" + room_obj.institute.name + "")
+            }
         }
     }
 });
@@ -361,7 +760,21 @@ function setToRoom(to_room_number) {
     if (from_room) {
         end_loc += "&" + from_room_param_str + "=" + from_room;
     }
-    end_loc += "&" + to_room_param_str + "=" + to_room_number;
+    if (to_room_number) {
+        end_loc += "&" + to_room_param_str + "=" + to_room_number;
+    }
+    window.location = end_loc;
+}
+
+function setFromRoom(from_room_number) {
+    var current_loc = window.location + "";
+    var end_loc = current_loc.substr(0, current_loc.indexOf(".html") + 5) + "?" + language_param_str + "=" + lang;
+    if (to_room) {
+        end_loc += "&" + to_room_param_str + "=" + to_room;
+    }
+    if (from_room_number) {
+        end_loc += "&" + from_room_param_str + "=" + from_room_number;
+    }
     window.location = end_loc;
 }
 

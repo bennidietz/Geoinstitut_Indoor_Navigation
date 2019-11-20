@@ -1,4 +1,4 @@
-const to_floor_plans_folder = "floor_plans/";
+const to_floor_plans_folder = "http://christian-terbeck.de/projects/ba/img/levels/";
 const to_symbols_folder = "symbols/";
 const from_room_param_str = "from_room";
 const to_room_param_str = "to_room";
@@ -13,7 +13,6 @@ if (to_room) {
     var to_level = to_room.substr(0, 1);
 }
 
-var institutes = {};
 var rooms_order_after_level = {};
 var rooms_order_after_roomnr = {};
 var paths = {};
@@ -63,7 +62,8 @@ class Room {
     constructor(json) {
         this.room_nr = json["no"];
         this.category = json["category"];
-        this.institute = institutes[json["institute"]];
+        this.institute = json["institute"];
+        this.institute["name"] = this.getInstitutName(json["institute"]);
         this.level = json["level"];
         this.door_coordinates = [Number(json["doorX"]), Number(json["doorY"])];
         this.spatial_extend = [
@@ -72,6 +72,16 @@ class Room {
         ];
         this.openingHours = [json["hoursStart"], json["hoursEnd"]];
         this.description = json["description"];
+    }
+
+    getInstitutName(institut_json) {
+        if (stringsAreEqual(lang, "en")) {
+            return institut_json["name_en"];
+        } else if (stringsAreEqual(lang, "es")) {
+            return institut_json["name_es"];
+        } else {
+            return institut_json["name_de"];
+        }
     }
 }
 
@@ -93,10 +103,15 @@ class Institute {
 }
 
 class Paths {
-    constructor(level, json) {
-        this.startPoint = [Number(json["start"][0]), Number(json["start"][1])];
-        this.endPoint = [Number(json["end"][0]), Number(json["end"][1])];
-        this.level = level;
+    constructor(json) {
+        this.startPoint = [Number(json["x1"]), Number(json["y1"])];
+        this.endPoint = [Number(json["x2"]), Number(json["y2"])];
+        if (json["level"]) {
+            this.level = json["level"];
+        } else {
+            // related to all levels
+            this.level = "*";
+        }
         this.direction = [roundWithTwoDecimals(this.endPoint[0] - this.startPoint[0]), roundWithTwoDecimals(this.endPoint[1] - this.startPoint[1])]; // direction of vector
     }
 }
@@ -137,26 +152,39 @@ function api(type, query) {
         timeout: 60000,
         success: function(data) {
             if (data.status == 'success') {
-                //console.log(data)
+                console.log(data)
                 if (stringsAreEqual(query, "all") && stringsAreEqual(type, "rooms")) {
                     for (var i in data) {
-                        if (!rooms_order_after_level.hasOwnProperty(data[i]["level"])) {
-                            rooms_order_after_level[data[i]["level"]] = [];
-                        }
-                        if (data[i].hasOwnProperty("no")) {
-                            var room = new Room(data[i]);
-                            rooms_order_after_level[data[i]["level"]].push(room)
-                            rooms_order_after_roomnr[data[i]["no"]] = room;
+                        console.log(data[i]["level"])
+                        console.log()
+                        if (data[i]["level"] && data[i]["level"].hasOwnProperty("id")) {
+                            if (!rooms_order_after_level.hasOwnProperty(data[i]["level"]["id"])) {
+                                rooms_order_after_level[data[i]["level"]["id"]] = [];
+                            }
+                            if (data[i].hasOwnProperty("no")) {
+                                if (data[i]["no"] && data[i]["institute"]) {
+                                    var room = new Room(data[i]);
+                                    rooms_order_after_level[data[i]["level"]["id"]].push(room)
+                                    rooms_order_after_roomnr[data[i]["no"]] = room;
+                                }
+                            }
+                        } else {
+                            // toilets, stairs and elevator
+                            console.log(data[i])
                         }
                     }
-                    onRoomsLoaded();
-                } else if (stringsAreEqual(query, "all") && stringsAreEqual(type, "institutes")) {
+                    api("paths", "all");
+                } else if (stringsAreEqual(query, "all") && stringsAreEqual(type, "paths")) {
                     for (var i in data) {
-                        if (data[i].hasOwnProperty("name_de")) {
-                            institutes[data[i]["id"]] = new Institute(data[i])
+                        var level = data[i]["level"];
+                        if (!level) level = "*";
+                        if (!paths.hasOwnProperty(level)) {
+                            paths[level] = [];
                         }
+                        paths[level].push(new Paths(data[i]));
                     }
-                    api("rooms", "all")
+                    console.log(paths)
+                    onRoomsLoaded();
                 }
             }
         },
@@ -263,7 +291,7 @@ function displayDestinationReached(direction_of_desination) {
 }
 
 function displayArrow(direction, length) {
-    length = Math.round(length * 36 / 100)
+    length = Math.round(length * 45 / 100)
     var file = "symbols/";
     switch (direction) {
         case 0:
@@ -587,14 +615,8 @@ function storeRoomsOfBuilding() {
             "color": "cyan"
         }]
     };
-    for (var level in paths_data) {
-        paths[level] = [];
-        for (var i in paths_data[level]) {
-            paths[level].push(new Paths(level, paths_data[level][i]));
-        }
-    }
-    api("institutes", "all")
-        //api("paths", "all")
+
+    api("rooms", "all")
 }
 
 function stringsAreEqual(str1, str2) {
@@ -698,10 +720,10 @@ canvas.addEventListener('click', function(e) {
             $("#room_details").css("display", "block");
             if (from_room_object) {
                 $("#room_details").html("<b>" + strings["room_nr"][language_index] + ":</b> " + room_obj.room_nr + "<span style='padding-left:25px'><btn class='btn btn-primary' onclick='setToRoom(" + room_obj.room_nr + ")' style='font-size:0.8em'>=> " + strings["navigate_to_room"][language_index] + "</btn></span><br>" +
-                    "<b>" + strings["institute"][language_index] + ": </b>" + room_obj.institute.name + "")
+                    "<b>" + strings["institute"][language_index] + ": </b>" + room_obj.institute["name"] + "")
             } else {
                 $("#room_details").html("<b>" + strings["room_nr"][language_index] + ":</b> " + room_obj.room_nr + "<span style='padding-left:25px'><btn class='btn btn-primary' onclick='setFromRoom(" + room_obj.room_nr + ")' style='font-size:0.8em'>=> " + strings["start_from_here"][language_index] + "</btn></span><br>" +
-                    "<b>" + strings["institute"][language_index] + ": </b>" + room_obj.institute.name + "")
+                    "<b>" + strings["institute"][language_index] + ": </b>" + room_obj.institute["name"] + "")
             }
         }
     }
@@ -717,35 +739,35 @@ function pointIsWithinSpatialExtend(point, spatial_extend) {
 }
 
 function getImageURLForLevel(level) {
-    var img_name = "EG.png"; // default value
+    var img_name = "0.png"; // default value
     switch (level) {
         case "1":
         case 1:
-            img_name = "KG.png";
+            img_name = "-1.png";
             break;
         case "2":
         case 2:
-            img_name = "EG.png";
+            img_name = "0.png";
             break;
         case "3":
         case 3:
-            img_name = "1OG.png";
+            img_name = "1.png";
             break;
         case "4":
         case 4:
-            img_name = "2OG.png";
+            img_name = "2.png";
             break;
         case "5":
         case 5:
-            img_name = "3OG.png";
+            img_name = "3.png";
             break;
         case "6":
         case 6:
-            img_name = "4OG.png";
+            img_name = "4.png";
             break;
         case "7":
         case 7:
-            img_name = "5OG.png";
+            img_name = "5.png";
             break;
         default:
             break;

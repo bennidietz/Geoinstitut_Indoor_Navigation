@@ -64,7 +64,7 @@ class Room {
         this.category = json["category"];
         this.institute = json["institute"];
         this.institute["name"] = this.getInstitutName(json["institute"]);
-        this.level = json["level"];
+        this.level = json["level"]["id"];
         this.door_coordinates = [Number(json["doorX"]), Number(json["doorY"])];
         this.spatial_extend = [
             [json["x1"], json["y1"]],
@@ -106,8 +106,8 @@ class Paths {
     constructor(json) {
         this.startPoint = [Number(json["x1"]), Number(json["y1"])];
         this.endPoint = [Number(json["x2"]), Number(json["y2"])];
-        if (json["level"]) {
-            this.level = json["level"];
+        if (json["level"] && json["level"].hasOwnProperty("id")) {
+            this.level = Number(json["level"]["id"]);
         } else {
             // related to all levels
             this.level = "*";
@@ -152,11 +152,8 @@ function api(type, query) {
         timeout: 60000,
         success: function(data) {
             if (data.status == 'success') {
-                console.log(data)
                 if (stringsAreEqual(query, "all") && stringsAreEqual(type, "rooms")) {
                     for (var i in data) {
-                        console.log(data[i]["level"])
-                        console.log()
                         if (data[i]["level"] && data[i]["level"].hasOwnProperty("id")) {
                             if (!rooms_order_after_level.hasOwnProperty(data[i]["level"]["id"])) {
                                 rooms_order_after_level[data[i]["level"]["id"]] = [];
@@ -170,14 +167,17 @@ function api(type, query) {
                             }
                         } else {
                             // toilets, stairs and elevator
-                            console.log(data[i])
                         }
                     }
                     api("paths", "all");
                 } else if (stringsAreEqual(query, "all") && stringsAreEqual(type, "paths")) {
                     for (var i in data) {
-                        var level = data[i]["level"];
-                        if (!level) level = "*";
+                        var level = null;
+                        if (data[i]["level"]) {
+                            level = data[i]["level"]["id"];
+                        } else {
+                            level = "*";
+                        }
                         if (!paths.hasOwnProperty(level)) {
                             paths[level] = [];
                         }
@@ -273,10 +273,11 @@ function onRoomsLoaded() {
 }
 
 function calculateRoute(roomA, roomB) {
-    var level_string = "1OG";
+    var level_string = "2";
     var detailsPathA = getDetailsOfNearestPath(roomA.door_coordinates, paths[level_string]);
     var detailsPathB = getDetailsOfNearestPath(roomB.door_coordinates, paths[level_string]);
 
+    console.log(detailsPathA, detailsPathB)
     shortest_nav_path = getShortestPathBetweenPointsOnPaths(detailsPathA["point"], detailsPathA["path_index"], detailsPathB["point"], detailsPathB["path_index"], paths[level_string]);
     if (etagen_nummer == from_room_object.level || etagen_nummer == to_room_object.level) {
         shortest_nav_path["points_on_route"].splice(0, 0, from_room_object.door_coordinates);
@@ -296,7 +297,7 @@ function displayArrow(direction, length) {
     switch (direction) {
         case 0:
             //top
-            file += "arrow_top";
+            file += "arrow_up";
             break;
         case 1:
             //right

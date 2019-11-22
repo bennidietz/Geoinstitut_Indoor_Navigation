@@ -12,12 +12,14 @@ var screen_width = window.innerWidth;
 if (to_room) {
     var to_level = to_room.substr(0, 1);
 }
+const length_of_buidling = 45;
 
 var rooms_order_after_level = {};
 var rooms_order_after_roomnr = {};
 var paths = {};
 var etagen_nummer = null;
 var shortest_nav_path = null;
+var currently_selected_room = null;
 
 var smartphone = true;
 var mapfullwidth = true;
@@ -292,7 +294,7 @@ function displayDestinationReached(direction_of_desination) {
 }
 
 function displayArrow(direction, length) {
-    length = Math.round(length * 45 / 100)
+    length = Math.round(length * length_of_buidling / 100)
     var file = "symbols/";
     switch (direction) {
         case 0:
@@ -719,16 +721,21 @@ canvas.addEventListener('click', function(e) {
         if (pointIsWithinSpatialExtend([mouseX, mouseY], room_obj.spatial_extend)) {
             setImageWithoutRoute(etagen_nummer, room_obj)
             $("#room_details").css("display", "block");
+            currently_selected_room = room_obj;
             if (from_room_object) {
                 $("#room_details").html("<b>" + strings["room_nr"][language_index] + ":</b> " + room_obj.room_nr + "<span style='padding-left:25px'><btn class='btn btn-primary' onclick='setToRoom(" + room_obj.room_nr + ")' style='font-size:0.8em'>=> " + strings["navigate_to_room"][language_index] + "</btn></span><br>" +
                     "<b>" + strings["institute"][language_index] + ": </b>" + room_obj.institute["name"] + "")
             } else {
-                $("#room_details").html("<b>" + strings["room_nr"][language_index] + ":</b> " + room_obj.room_nr + "<span style='padding-left:25px'><btn class='btn btn-primary' onclick='setFromRoom(" + room_obj.room_nr + ")' style='font-size:0.8em'>=> " + strings["start_from_here"][language_index] + "</btn></span><br>" +
+                $("#room_details").html("<b>" + strings["room_nr"][language_index] + ":</b> " + String(room_obj.room_nr) + "<span style='padding-left:25px'><btn class='btn btn-primary' onclick='setFromRoomCurrentlySelected()' style='font-size:0.8em'>=> " + strings["start_from_here"][language_index] + "</btn></span><br>" +
                     "<b>" + strings["institute"][language_index] + ": </b>" + room_obj.institute["name"] + "")
             }
         }
     }
 });
+
+function setFromRoomCurrentlySelected() {
+    setFromRoom(currently_selected_room.room_nr)
+}
 
 function pointIsWithinSpatialExtend(point, spatial_extend) {
     if (point[0] >= spatial_extend[0][0] && point[0] <= spatial_extend[1][0] &&

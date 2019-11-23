@@ -7,6 +7,7 @@ const strings = {
     "room_nr": ["Raumnummer", "Room number", "Habitación número"],
     "institute": ["Institut", "Institute", "Instituto"],
     "level": ["Etage", "Level", "Plano"],
+    "destination_reached": ["Sie haben Ihr Ziel erreicht", "You reached your destination", ""],
     "destination_is_at": ["Das Ziel befindet sich ", "The destination is "],
     "at_top": [],
     "reset_position": ["Ausgangsposition zurücksetzen", "Reset initial position", ""],

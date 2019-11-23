@@ -320,9 +320,14 @@ function calculateRoute(roomA, roomB) {
         var two_paths = getShortestPathBetweenPointsOnPathsForDifferentLevels(roomA, roomB);
         shortest_nav_path1 = two_paths[0];
         shortest_nav_path2 = two_paths[1];
+        shortest_nav_path2["dist"].splice(0, 0, 0);
+        shortest_nav_path2["directions"].splice(0, 0, 0);
+        shortest_nav_path2["points_on_route"].splice(0, 0, 0);
         if (etagen_nummer == from_room_object.level || etagen_nummer == to_room_object.level) {
             shortest_nav_path1["points_on_route"].splice(0, 0, from_room_object.door_coordinates);
+            //shortest_nav_path2["points_on_route"].splice(0, 0, from_room_object.door_coordinates);
         }
+
         displayFullNavigation(from_room_object.level, shortest_nav_path1);
     }
 }
@@ -395,8 +400,6 @@ function getShortestPathBetweenPointsOnPathsForDifferentLevels(roomA, roomB) {
 }
 
 function getShortestPathDifferentLevels(detailsPathA, detailsPathB, all_possible_pathsA, all_possible_pathsB, stairs_elevator, roomA, roomB, detailsPathC) {
-
-    var min_distance_path = 1000; // unrealistic maximal distance
     var shortest_path = {
         "directions": null,
         "dist": null,
@@ -404,30 +407,23 @@ function getShortestPathDifferentLevels(detailsPathA, detailsPathB, all_possible
         "break_index": null
     };
 
-    for (var j in all_possible_pathsA) {
-        for (var k in all_possible_pathsB) {
-            // all possible combinations of paths from level A and paths from level B
-            var detailsPath1 = shortestPathGetInfos(all_possible_pathsA[j], paths[roomA.level], detailsPathA["point"], detailsPathC["point"])
+    var detailsPath1 = shortestPathGetInfos(all_possible_pathsA, paths[roomA.level], detailsPathA["point"], detailsPathC["point"])
 
-            var detailsPath2 = shortestPathGetInfos(all_possible_pathsB[k], paths[roomB.level], detailsPathC["point"], detailsPathB["point"])
+    var detailsPath2 = shortestPathGetInfos(all_possible_pathsB, paths[roomB.level], detailsPathC["point"], detailsPathB["point"])
 
-            var whole_distance = detailsPath1["distance"] + detailsPath2["distance"];
-            if (whole_distance < min_distance_path) {
-                min_distance_path = whole_distance;
-                //shortest_path["directions"] = detailsPath1["directions"].concat(detailsPath2["directions"])
-                //shortest_path["dist"] = detailsPath1["dist"].concat(detailsPath2["dist"])
-                detailsPath1["points_on_route"].push(stairs_elevator.door_coordinates)
-                    //shortest_path["points_on_route"] = detailsPath1["points_on_route"].concat(detailsPath2["points_on_route"])
-                detailsPath2["points_on_route"].push(roomB.door_coordinates)
+    var whole_distance = detailsPath1["distance"] + detailsPath2["distance"];
 
-                shortest_path = [detailsPath1, detailsPath2];
-            }
-        }
-    }
+    //shortest_path["directions"] = detailsPath1["directions"].concat(detailsPath2["directions"])
+    //shortest_path["dist"] = detailsPath1["dist"].concat(detailsPath2["dist"])
+    detailsPath1["points_on_route"].push(stairs_elevator.door_coordinates)
+        //shortest_path["points_on_route"] = detailsPath1["points_on_route"].concat(detailsPath2["points_on_route"])
+    detailsPath2["points_on_route"].push(roomB.door_coordinates)
+    shortest_path = [detailsPath1, detailsPath2];
     return shortest_path;
 }
 
 function shortestPathGetInfos(all_possible_paths, all_paths, pointA, pointB) {
+    var distance_path = 1000; // unrealistic maximal distance
     var output = {
         "distance": [],
         "directions": [],
@@ -435,31 +431,42 @@ function shortestPathGetInfos(all_possible_paths, all_paths, pointA, pointB) {
         "dist": [],
         "directions": []
     }
-    if (all_possible_paths.length < 2) {
-        output["points_on_route"] = [pointA, pointB];
-        output["dist"] = [distanceBetweenTwoPoints(pointA, pointB)];
-        output["directions"] = [getDirectionOfRoute(pointA, pointB)];
-        return output;
+    for (var k in all_possible_paths) {
+        var points = []
+        var directions = []
+        var dist_ances = []
+        if (all_possible_paths[k].length < 2) {
+            output["points_on_route"] = [pointA, pointB];
+            output["dist"] = [distanceBetweenTwoPoints(pointA, pointB)];
+            output["directions"] = [getDirectionOfRoute(pointA, pointB)];
+            return output;
+        }
+        var tmp_point = pointWherePathsAreConnected(all_paths[all_possible_paths[k][0]], all_paths[all_possible_paths[k][1]]);
+        var tmp_pointsArray = [pointA, tmp_point];
+        var tmp_distance = distanceBetweenTwoPoints(pointA, tmp_point);
+        dist_ances.push(tmp_distance)
+        directions.push(getDirectionOfRoute(pointA, tmp_point))
+        for (var i = 1; i < all_possible_paths[k].length - 1; i++) {
+            var dist = distanceBetweenTwoPoints(tmp_point, pointWherePathsAreConnected(all_paths[all_possible_paths[k][i]], all_paths[all_possible_paths[k][i + 1]]));
+            tmp_distance += dist;
+            dist_ances.push(dist)
+            directions.push(getDirectionOfRoute(tmp_point, pointWherePathsAreConnected(all_paths[all_possible_paths[k][i]], all_paths[all_possible_paths[k][i + 1]])))
+            tmp_point = pointWherePathsAreConnected(all_paths[all_possible_paths[k][i]], all_paths[all_possible_paths[k][i + 1]]);
+            tmp_pointsArray.push(tmp_point);
+        }
+        tmp_distance += distanceBetweenTwoPoints(tmp_point, pointB);
+        dist_ances.push(distanceBetweenTwoPoints(tmp_point, pointB))
+        directions.push(getDirectionOfRoute(tmp_point, pointB))
+        tmp_pointsArray.push(pointB);
+        points = tmp_pointsArray;
+        if (tmp_distance < distance_path) {
+            distance_path = tmp_distance;
+            output["points_on_route"] = points;
+            output["dist"] = dist_ances;
+            output["directions"] = directions;
+            output["distance"] = tmp_distance;
+        }
     }
-    var tmp_point = pointWherePathsAreConnected(all_paths[all_possible_paths[0]], all_paths[all_possible_paths[1]]);
-    var tmp_pointsArray = [pointA, tmp_point];
-    var tmp_distance = distanceBetweenTwoPoints(pointA, tmp_point);
-    output["dist"].push(tmp_distance)
-    output["directions"].push(getDirectionOfRoute(pointA, tmp_point))
-    for (var i = 1; i < all_possible_paths.length - 1; i++) {
-        var dist = distanceBetweenTwoPoints(tmp_point, pointWherePathsAreConnected(all_paths[all_possible_paths[i]], all_paths[all_possible_paths[i + 1]]));
-        tmp_distance += dist;
-        output["dist"].push(dist)
-        output["directions"].push(getDirectionOfRoute(tmp_point, pointWherePathsAreConnected(all_paths[all_possible_paths[i]], all_paths[all_possible_paths[i + 1]])))
-        tmp_point = pointWherePathsAreConnected(all_paths[all_possible_paths[i]], all_paths[all_possible_paths[i + 1]]);
-        tmp_pointsArray.push(tmp_point);
-    }
-    tmp_distance += distanceBetweenTwoPoints(tmp_point, pointB);
-    output["dist"].push(distanceBetweenTwoPoints(tmp_point, pointB))
-    output["directions"].push(getDirectionOfRoute(tmp_point, pointB))
-    tmp_pointsArray.push(pointB);
-    output["distance"] = tmp_distance;
-    output["points_on_route"] = tmp_pointsArray;
     return output;
 }
 
@@ -638,7 +645,7 @@ function displayFullNavigation(level, shortest_path) {
     var img = new Image();
     img.onload = function() {
         ctx.drawImage(img, 0, 0, img.width, img.height, 0, 0, screen_width, screen_width);
-        if (from_room_object && etagen_nummer == from_room_object.level) {
+        if ((from_room_object && etagen_nummer == from_room_object.level) || (to_room_object && etagen_nummer == to_room_object.level)) {
             // draw circle at the current position of the user
             drawCircle(ctx, points_on_route[0][0] * canvas.width / 100, points_on_route[0][1] * canvas.height / 100, "rgba(255, 0, 0, 0.6)")
         }
@@ -655,7 +662,7 @@ function displayFullNavigation(level, shortest_path) {
 }
 
 function nextStepClicked() {
-    alert(JSON.stringify(shortest_nav_path2))
+    //alert(JSON.stringify(shortest_nav_path2))
     if (shortest_nav_path2) {
         if (shortest_nav_path1["directions"].length == 0) {
             if (shortest_nav_path2["points_on_route"].length > shortest_nav_path2["dist"].length + 2) {
@@ -667,8 +674,12 @@ function nextStepClicked() {
                 shortest_nav_path2["directions"] = shortest_nav_path2["directions"].splice(1)
                 shortest_nav_path2["points_on_route"] = shortest_nav_path2["points_on_route"].splice(1)
             }
-            console.log(shortest_nav_path2)
-            displayFullNavigation(to_room_object.level, shortest_nav_path2)
+            etagen_nummer = to_room_object.level;
+            displayFullNavigation(etagen_nummer, shortest_nav_path2)
+            if (shortest_nav_path2["directions"].length == 0) {
+                // navigation is finished
+                navigationFinished();
+            }
         } else {
             if (shortest_nav_path1["points_on_route"].length > shortest_nav_path1["dist"].length + 2) {
                 shortest_nav_path1["dist"] = shortest_nav_path1["dist"].splice(1)
@@ -679,11 +690,9 @@ function nextStepClicked() {
                 shortest_nav_path1["directions"] = shortest_nav_path1["directions"].splice(1)
                 shortest_nav_path1["points_on_route"] = shortest_nav_path1["points_on_route"].splice(1)
             }
-            console.log(shortest_nav_path1)
             displayFullNavigation(from_room_object.level, shortest_nav_path1)
         }
     } else {
-        console.log(shortest_nav_path1)
         if (shortest_nav_path1["points_on_route"].length > shortest_nav_path1["dist"].length + 2) {
             shortest_nav_path1["dist"] = shortest_nav_path1["dist"].splice(1)
             shortest_nav_path1["directions"] = shortest_nav_path1["directions"].splice(1)
@@ -694,7 +703,20 @@ function nextStepClicked() {
             shortest_nav_path1["points_on_route"] = shortest_nav_path1["points_on_route"].splice(1)
         }
         displayFullNavigation(etagen_nummer, shortest_nav_path1)
+        if (shortest_nav_path1["directions"].length == 0) {
+            // navigation is finished
+            navigationFinished();
+        }
     }
+}
+
+function navigationFinished() {
+    $("#arrow").css("display", "none");
+    $("#distance").css("margin", "10%");
+    $("#distance").css("display", "block");
+    $("#next_step").css("display", "none")
+    $("#distance").text(strings["destination_reached"][language_index]);
+    //alert(strings["destination_reached"][language_index])
 }
 
 function displayRouteBetweenPoints(ctx, full_path, imageWidth, imageHeigth) {

@@ -13,13 +13,16 @@ if (to_room) {
     var to_level = to_room.substr(0, 1);
 }
 const length_of_buidling = 45;
+var ctx = document.getElementById('canvas').getContext('2d');
 
 var rooms_order_after_level = {};
 var rooms_order_after_roomnr = {};
 var paths = {};
 var etagen_nummer = null;
-var shortest_nav_path = null;
+var shortest_nav_path1 = null;
+var shortest_nav_path2 = null;
 var currently_selected_room = null;
+var strais_elevators = [];
 
 var smartphone = true;
 var mapfullwidth = true;
@@ -169,6 +172,9 @@ function api(type, query) {
                             }
                         } else {
                             // toilets, stairs and elevator
+                            if (data[i].hasOwnProperty("category")) {
+                                strais_elevators.push(new Elevator_Stairs(data[i]))
+                            }
                         }
                     }
                     api("paths", "all");
@@ -185,7 +191,6 @@ function api(type, query) {
                         }
                         paths[level].push(new Paths(data[i]));
                     }
-                    console.log(paths)
                     onRoomsLoaded();
                 }
             }
@@ -196,6 +201,29 @@ function api(type, query) {
         }
     });
 }
+
+class Elevator_Stairs {
+    constructor(json) {
+        this.category = Number(json["category"]["id"]);
+        this.category_name = this.getCategoryName(json);
+        this.door_coordinates = [Number(json["doorX"]), Number(json["doorY"])];
+        this.spatial_extend = [
+            [json["x1"], json["y1"]],
+            [json["x2"], json["y2"]]
+        ];
+    }
+
+    getCategoryName(json) {
+        if (stringsAreEqual(lang, "en")) {
+            return json["category"]["name_en"];
+        } else if (stringsAreEqual(lang, "es")) {
+            return json["category"]["name_es"];
+        } else {
+            return json["category"]["name_de"];
+        }
+    }
+}
+
 
 $(function() {
     storeRoomsOfBuilding();
@@ -275,17 +303,28 @@ function onRoomsLoaded() {
 }
 
 function calculateRoute(roomA, roomB) {
-    var level_string = "2";
+    var level_string = roomA.level;
     var detailsPathA = getDetailsOfNearestPath(roomA.door_coordinates, paths[level_string]);
     var detailsPathB = getDetailsOfNearestPath(roomB.door_coordinates, paths[level_string]);
 
-    console.log(detailsPathA, detailsPathB)
-    shortest_nav_path = getShortestPathBetweenPointsOnPaths(detailsPathA["point"], detailsPathA["path_index"], detailsPathB["point"], detailsPathB["path_index"], paths[level_string]);
-    if (etagen_nummer == from_room_object.level || etagen_nummer == to_room_object.level) {
-        shortest_nav_path["points_on_route"].splice(0, 0, from_room_object.door_coordinates);
-        shortest_nav_path["points_on_route"].push(to_room_object.door_coordinates)
+    if (roomA.level == roomB.level) {
+        shortest_nav_path1 = getShortestPathBetweenPointsOnPaths(detailsPathA["point"], detailsPathA["path_index"], detailsPathB["point"], detailsPathB["path_index"], paths[level_string]);
+        //displayRouteTrial(level_string, shortest_nav_path1["points_on_route"])
+        if (etagen_nummer == from_room_object.level || etagen_nummer == to_room_object.level) {
+            shortest_nav_path1["points_on_route"].splice(0, 0, from_room_object.door_coordinates);
+            shortest_nav_path1["points_on_route"].push(to_room_object.door_coordinates)
+        }
+        displayFullNavigation(from_room_object.level, shortest_nav_path1);
+    } else {
+        // visitor needs to use either the stairs or the elevator
+        var two_paths = getShortestPathBetweenPointsOnPathsForDifferentLevels(roomA, roomB);
+        shortest_nav_path1 = two_paths[0];
+        shortest_nav_path2 = two_paths[1];
+        if (etagen_nummer == from_room_object.level || etagen_nummer == to_room_object.level) {
+            shortest_nav_path1["points_on_route"].splice(0, 0, from_room_object.door_coordinates);
+        }
+        displayFullNavigation(from_room_object.level, shortest_nav_path1);
     }
-    displayFullNavigation(from_room_object.level, shortest_nav_path);
 }
 
 function displayDestinationReached(direction_of_desination) {
@@ -326,6 +365,102 @@ function getShortestPathBetweenPointsOnPaths(pointA, pathA_index, pointB, pathB_
         [Number(pathA_index)]
     ], Number(pathB_index));
     return getShortestPath(path_array, all_possible_paths, pointA, pointB);
+}
+
+function getShortestPathBetweenPointsOnPathsForDifferentLevels(roomA, roomB) {
+    var pathsLevelA = paths[roomA.level];
+    var pathsLevelB = paths[roomB.level];
+
+    var detailsPathA = getDetailsOfNearestPath(roomA.door_coordinates, pathsLevelA);
+    var detailsPathB = getDetailsOfNearestPath(roomB.door_coordinates, pathsLevelB);
+
+    var min_distance = 1000; // unrealistic maximal distance
+    var min_paths = null;
+    for (var i in strais_elevators) {
+        var detailsPathC = getDetailsOfNearestPath(strais_elevators[i].door_coordinates, pathsLevelA);
+        var all_possible_pathsA = getAllPossiblePaths(getConectionArrayPaths(pathsLevelA), [
+            [Number(detailsPathA["path_index"])]
+        ], Number(detailsPathC["path_index"]));
+        var all_possible_pathsB = getAllPossiblePaths(getConectionArrayPaths(pathsLevelB), [
+            [Number(detailsPathB["path_index"])]
+        ], Number(detailsPathC["path_index"]));
+        var spath = getShortestPathDifferentLevels(detailsPathA, detailsPathB, all_possible_pathsA, all_possible_pathsB, strais_elevators[i], roomA, roomB, detailsPathC);
+        var current_distance = spath[0]["distance"] + spath[1]["distance"];
+        if (current_distance < min_distance) {
+            min_distance = current_distance;
+            min_paths = spath;
+        }
+    }
+    return min_paths;
+}
+
+function getShortestPathDifferentLevels(detailsPathA, detailsPathB, all_possible_pathsA, all_possible_pathsB, stairs_elevator, roomA, roomB, detailsPathC) {
+
+    var min_distance_path = 1000; // unrealistic maximal distance
+    var shortest_path = {
+        "directions": null,
+        "dist": null,
+        "points_on_route": null,
+        "break_index": null
+    };
+
+    for (var j in all_possible_pathsA) {
+        for (var k in all_possible_pathsB) {
+            // all possible combinations of paths from level A and paths from level B
+            var detailsPath1 = shortestPathGetInfos(all_possible_pathsA[j], paths[roomA.level], detailsPathA["point"], detailsPathC["point"])
+
+            var detailsPath2 = shortestPathGetInfos(all_possible_pathsB[k], paths[roomB.level], detailsPathC["point"], detailsPathB["point"])
+
+            var whole_distance = detailsPath1["distance"] + detailsPath2["distance"];
+            if (whole_distance < min_distance_path) {
+                min_distance_path = whole_distance;
+                //shortest_path["directions"] = detailsPath1["directions"].concat(detailsPath2["directions"])
+                //shortest_path["dist"] = detailsPath1["dist"].concat(detailsPath2["dist"])
+                detailsPath1["points_on_route"].push(stairs_elevator.door_coordinates)
+                    //shortest_path["points_on_route"] = detailsPath1["points_on_route"].concat(detailsPath2["points_on_route"])
+                detailsPath2["points_on_route"].push(roomB.door_coordinates)
+
+                shortest_path = [detailsPath1, detailsPath2];
+            }
+        }
+    }
+    return shortest_path;
+}
+
+function shortestPathGetInfos(all_possible_paths, all_paths, pointA, pointB) {
+    var output = {
+        "distance": [],
+        "directions": [],
+        "points_on_route": null,
+        "dist": [],
+        "directions": []
+    }
+    if (all_possible_paths.length < 2) {
+        output["points_on_route"] = [pointA, pointB];
+        output["dist"] = [distanceBetweenTwoPoints(pointA, pointB)];
+        output["directions"] = [getDirectionOfRoute(pointA, pointB)];
+        return output;
+    }
+    var tmp_point = pointWherePathsAreConnected(all_paths[all_possible_paths[0]], all_paths[all_possible_paths[1]]);
+    var tmp_pointsArray = [pointA, tmp_point];
+    var tmp_distance = distanceBetweenTwoPoints(pointA, tmp_point);
+    output["dist"].push(tmp_distance)
+    output["directions"].push(getDirectionOfRoute(pointA, tmp_point))
+    for (var i = 1; i < all_possible_paths.length - 1; i++) {
+        var dist = distanceBetweenTwoPoints(tmp_point, pointWherePathsAreConnected(all_paths[all_possible_paths[i]], all_paths[all_possible_paths[i + 1]]));
+        tmp_distance += dist;
+        output["dist"].push(dist)
+        output["directions"].push(getDirectionOfRoute(tmp_point, pointWherePathsAreConnected(all_paths[all_possible_paths[i]], all_paths[all_possible_paths[i + 1]])))
+        tmp_point = pointWherePathsAreConnected(all_paths[all_possible_paths[i]], all_paths[all_possible_paths[i + 1]]);
+        tmp_pointsArray.push(tmp_point);
+    }
+    tmp_distance += distanceBetweenTwoPoints(tmp_point, pointB);
+    output["dist"].push(distanceBetweenTwoPoints(tmp_point, pointB))
+    output["directions"].push(getDirectionOfRoute(tmp_point, pointB))
+    tmp_pointsArray.push(pointB);
+    output["distance"] = tmp_distance;
+    output["points_on_route"] = tmp_pointsArray;
+    return output;
 }
 
 function getShortestPath(all_paths, all_paths_indexes, pointA, pointB) {
@@ -466,7 +601,7 @@ function pointWherePathsAreConnected(pathA, pathB) {
     }
 }
 
-
+// @source: https://stackoverflow.com/questions/13937782/calculating-the-point-of-intersection-of-two-lines
 function line_intersect(x1, y1, x2, y2, x3, y3, x4, y4) {
     var ua, ub, denom = (y4 - y3) * (x2 - x1) - (x4 - x3) * (y2 - y1);
     if (denom == 0) {
@@ -476,6 +611,7 @@ function line_intersect(x1, y1, x2, y2, x3, y3, x4, y4) {
     ub = ((x2 - x1) * (y1 - y3) - (y2 - y1) * (x1 - x3)) / denom;
     if (ub < 0) return null;
     if (ua < 0) return null; // own modification: only consider points that are within the line (not like a vector)
+    if (!(ua >= 0 && ua <= 1) || !(ub >= 0 && ub <= 1)) return null;
     return {
         x: x1 + ua * (x2 - x1),
         y: y1 + ua * (y2 - y1),
@@ -495,7 +631,6 @@ function displayFullNavigation(level, shortest_path) {
     }
 
     var points_on_route = shortest_path["points_on_route"];
-    var ctx = document.getElementById('canvas').getContext('2d');
     var canvas = document.getElementById('canvas');
     if (!mapfullwidth) screen_width = screen_width * 4.5 / 10; // Desktop Version
     canvas.width = screen_width;
@@ -511,23 +646,55 @@ function displayFullNavigation(level, shortest_path) {
             // draw circle at the destination
             drawCircle(ctx, to_room_object.door_coordinates[0] * canvas.width / 100, to_room_object.door_coordinates[1] * canvas.height / 100, "rgba(34,139,34, 0.6)")
         }
+        for (var i in paths[from_room_object.level]) {
+            //drawLineRelative(ctx, paths[from_room_object.level][i].startPoint, paths[from_room_object.level][i].endPoint, canvas.width, canvas.height, "orange")
+        }
         displayRouteBetweenPoints(ctx, points_on_route, canvas.width, canvas.height);
     };
     img.src = getImageURLForLevel(level);
 }
 
 function nextStepClicked() {
-
-    if (shortest_nav_path["points_on_route"].length > shortest_nav_path["dist"].length + 2) {
-        shortest_nav_path["dist"] = shortest_nav_path["dist"].splice(1)
-        shortest_nav_path["directions"] = shortest_nav_path["directions"].splice(1)
-        shortest_nav_path["points_on_route"] = shortest_nav_path["points_on_route"].splice(2)
+    alert(JSON.stringify(shortest_nav_path2))
+    if (shortest_nav_path2) {
+        if (shortest_nav_path1["directions"].length == 0) {
+            if (shortest_nav_path2["points_on_route"].length > shortest_nav_path2["dist"].length + 2) {
+                shortest_nav_path2["dist"] = shortest_nav_path2["dist"].splice(1)
+                shortest_nav_path2["directions"] = shortest_nav_path2["directions"].splice(1)
+                shortest_nav_path2["points_on_route"] = shortest_nav_path2["points_on_route"].splice(2)
+            } else {
+                shortest_nav_path2["dist"] = shortest_nav_path2["dist"].splice(1)
+                shortest_nav_path2["directions"] = shortest_nav_path2["directions"].splice(1)
+                shortest_nav_path2["points_on_route"] = shortest_nav_path2["points_on_route"].splice(1)
+            }
+            console.log(shortest_nav_path2)
+            displayFullNavigation(to_room_object.level, shortest_nav_path2)
+        } else {
+            if (shortest_nav_path1["points_on_route"].length > shortest_nav_path1["dist"].length + 2) {
+                shortest_nav_path1["dist"] = shortest_nav_path1["dist"].splice(1)
+                shortest_nav_path1["directions"] = shortest_nav_path1["directions"].splice(1)
+                shortest_nav_path1["points_on_route"] = shortest_nav_path1["points_on_route"].splice(2)
+            } else {
+                shortest_nav_path1["dist"] = shortest_nav_path1["dist"].splice(1)
+                shortest_nav_path1["directions"] = shortest_nav_path1["directions"].splice(1)
+                shortest_nav_path1["points_on_route"] = shortest_nav_path1["points_on_route"].splice(1)
+            }
+            console.log(shortest_nav_path1)
+            displayFullNavigation(from_room_object.level, shortest_nav_path1)
+        }
     } else {
-        shortest_nav_path["dist"] = shortest_nav_path["dist"].splice(1)
-        shortest_nav_path["directions"] = shortest_nav_path["directions"].splice(1)
-        shortest_nav_path["points_on_route"] = shortest_nav_path["points_on_route"].splice(1)
+        console.log(shortest_nav_path1)
+        if (shortest_nav_path1["points_on_route"].length > shortest_nav_path1["dist"].length + 2) {
+            shortest_nav_path1["dist"] = shortest_nav_path1["dist"].splice(1)
+            shortest_nav_path1["directions"] = shortest_nav_path1["directions"].splice(1)
+            shortest_nav_path1["points_on_route"] = shortest_nav_path1["points_on_route"].splice(2)
+        } else {
+            shortest_nav_path1["dist"] = shortest_nav_path1["dist"].splice(1)
+            shortest_nav_path1["directions"] = shortest_nav_path1["directions"].splice(1)
+            shortest_nav_path1["points_on_route"] = shortest_nav_path1["points_on_route"].splice(1)
+        }
+        displayFullNavigation(etagen_nummer, shortest_nav_path1)
     }
-    displayFullNavigation(etagen_nummer, shortest_nav_path)
 }
 
 function displayRouteBetweenPoints(ctx, full_path, imageWidth, imageHeigth) {
@@ -633,7 +800,7 @@ function stringsAreEqual(str1, str2) {
 $(".etagen_btn").on("click", function() {
     etagen_nummer = Number(this.id.replace("etagen_btn", ""))
     if (from_room_object && to_room_object) {
-        displayFullNavigation(etagen_nummer, shortest_nav_path);
+        displayFullNavigation(etagen_nummer, shortest_nav_path1);
     } else {
         setImageWithoutRoute(etagen_nummer, null)
     }
@@ -653,7 +820,6 @@ function remainHeaderOnTop() {
 }
 
 function setImageWithoutRoute(level, roomHighlighted) {
-    var ctx = document.getElementById('canvas').getContext('2d');
     var canvas = document.getElementById('canvas');
     if (!mapfullwidth) screen_width = screen_width * 4.5 / 10; // Desktop Version
     canvas.width = screen_width;
@@ -670,16 +836,16 @@ function setImageWithoutRoute(level, roomHighlighted) {
             drawCircle(ctx, to_room_object.door_coordinates[0] * canvas.width / 100, to_room_object.door_coordinates[1] * canvas.height / 100, "rgba(34,139,34, 0.6)")
         }
         if (roomHighlighted) {
-            highLightRoom(ctx, roomHighlighted.spatial_extend, canvas.width, canvas.height)
+            highLightRoom(ctx, roomHighlighted.spatial_extend, canvas.width, canvas.height, "rgba(124, 252, 0, 0.4)")
         }
     };
     img.src = getImageURLForLevel(level);
 }
 
-function highLightRoom(ctx, spatial_extend, cvwidth, cvheight) {
+function highLightRoom(ctx, spatial_extend, cvwidth, cvheight, color) {
     ctx.beginPath();
     ctx.rect(spatial_extend[0][0] * cvwidth / 100, spatial_extend[0][1] * cvheight / 100, (spatial_extend[1][0] - spatial_extend[0][0]) * cvwidth / 100, (spatial_extend[1][1] - spatial_extend[0][1]) * cvheight / 100);
-    ctx.fillStyle = "rgba(124, 252, 0, 0.4)"; // green with transparence
+    ctx.fillStyle = color;
     ctx.fill();
     ctx.stroke();
 }
@@ -723,7 +889,7 @@ canvas.addEventListener('click', function(e) {
             $("#room_details").css("display", "block");
             currently_selected_room = room_obj;
             if (from_room_object) {
-                $("#room_details").html("<b>" + strings["room_nr"][language_index] + ":</b> " + room_obj.room_nr + "<span style='padding-left:25px'><btn class='btn btn-primary' onclick='setToRoom(" + room_obj.room_nr + ")' style='font-size:0.8em'>=> " + strings["navigate_to_room"][language_index] + "</btn></span><br>" +
+                $("#room_details").html("<b>" + strings["room_nr"][language_index] + ":</b> " + room_obj.room_nr + "<span style='padding-left:25px'><btn class='btn btn-primary' onclick='setToRoomCurrentlySelected()' style='font-size:0.8em'>=> " + strings["navigate_to_room"][language_index] + "</btn></span><br>" +
                     "<b>" + strings["institute"][language_index] + ": </b>" + room_obj.institute["name"] + "")
             } else {
                 $("#room_details").html("<b>" + strings["room_nr"][language_index] + ":</b> " + String(room_obj.room_nr) + "<span style='padding-left:25px'><btn class='btn btn-primary' onclick='setFromRoomCurrentlySelected()' style='font-size:0.8em'>=> " + strings["start_from_here"][language_index] + "</btn></span><br>" +
@@ -731,10 +897,21 @@ canvas.addEventListener('click', function(e) {
             }
         }
     }
+    for (var i in strais_elevators) {
+        if (pointIsWithinSpatialExtend([mouseX, mouseY], strais_elevators[i].spatial_extend)) {
+            setImageWithoutRoute(etagen_nummer, strais_elevators[i]);
+            $("#room_details").css("display", "block");
+            $("#room_details").html("<b>" + strais_elevators[i].category_name + "</b>");
+        }
+    }
 });
 
 function setFromRoomCurrentlySelected() {
     setFromRoom(currently_selected_room.room_nr)
+}
+
+function setToRoomCurrentlySelected() {
+    setToRoom(currently_selected_room.room_nr)
 }
 
 function pointIsWithinSpatialExtend(point, spatial_extend) {

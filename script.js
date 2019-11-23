@@ -164,11 +164,9 @@ function api(type, query) {
                                 rooms_order_after_level[data[i]["level"]["id"]] = [];
                             }
                             if (data[i].hasOwnProperty("no")) {
-                                if (data[i]["no"] && data[i]["institute"]) {
-                                    var room = new Room(data[i]);
-                                    rooms_order_after_level[data[i]["level"]["id"]].push(room)
-                                    rooms_order_after_roomnr[data[i]["no"]] = room;
-                                }
+                                var room = new Room(data[i]);
+                                rooms_order_after_level[data[i]["level"]["id"]].push(room)
+                                rooms_order_after_roomnr[data[i]["no"]] = room;
                             }
                         } else {
                             // toilets, stairs and elevator
@@ -320,12 +318,13 @@ function calculateRoute(roomA, roomB) {
         var two_paths = getShortestPathBetweenPointsOnPathsForDifferentLevels(roomA, roomB);
         shortest_nav_path1 = two_paths[0];
         shortest_nav_path2 = two_paths[1];
+        console.log(shortest_nav_path2)
         shortest_nav_path2["dist"].splice(0, 0, 0);
         shortest_nav_path2["directions"].splice(0, 0, 0);
         shortest_nav_path2["points_on_route"].splice(0, 0, 0);
         if (etagen_nummer == from_room_object.level || etagen_nummer == to_room_object.level) {
             shortest_nav_path1["points_on_route"].splice(0, 0, from_room_object.door_coordinates);
-            //shortest_nav_path2["points_on_route"].splice(0, 0, from_room_object.door_coordinates);
+            //shortest_nav_path2["points_on_route"].splice(0, 0, strais_elevators[1].door_coordinates);
         }
 
         displayFullNavigation(from_room_object.level, shortest_nav_path1);
@@ -334,8 +333,30 @@ function calculateRoute(roomA, roomB) {
 
 function displayDestinationReached(direction_of_desination) {
     $("#arrow").css("display", "none");
-    $("#distance").css("display", "none");
+    $("#distance").text("");
 }
+
+if (document.layers) {
+    document.captureEvents(Event.KEYDOWN);
+}
+
+document.onkeydown = function(evt) {
+    var keyCode = evt ? (evt.which ? evt.which : evt.keyCode) : event.keyCode;
+    if (keyCode == 13) {
+        // For Enter.
+        if (from_room_object && to_room_object) {
+            nextStepClicked();
+        }
+    }
+    if (keyCode == 8) {
+        // For Escape.
+        if (from_room_object) {
+            cancelClicked();
+        }
+    } else {
+        return true;
+    }
+};
 
 function displayArrow(direction, length) {
     length = Math.round(length * length_of_buidling / 100)
@@ -360,6 +381,7 @@ function displayArrow(direction, length) {
         default:
             break;
     }
+    $("#arrow").css("display", "block");
     $("#arrow").attr("src", file + ".png");
     $("#distance").text(length + " m");
 }
@@ -378,18 +400,20 @@ function getShortestPathBetweenPointsOnPathsForDifferentLevels(roomA, roomB) {
 
     var detailsPathA = getDetailsOfNearestPath(roomA.door_coordinates, pathsLevelA);
     var detailsPathB = getDetailsOfNearestPath(roomB.door_coordinates, pathsLevelB);
-
+    console.log(detailsPathB)
     var min_distance = 1000; // unrealistic maximal distance
     var min_paths = null;
     for (var i in strais_elevators) {
-        var detailsPathC = getDetailsOfNearestPath(strais_elevators[i].door_coordinates, pathsLevelA);
+        if (strais_elevators[i]["category"] == 3) break; // ignore toilettes
+        var detailsPathC_levelA = getDetailsOfNearestPath(strais_elevators[i].door_coordinates, pathsLevelA);
+        var detailsPathC_levelB = getDetailsOfNearestPath(strais_elevators[i].door_coordinates, pathsLevelB);
         var all_possible_pathsA = getAllPossiblePaths(getConectionArrayPaths(pathsLevelA), [
             [Number(detailsPathA["path_index"])]
-        ], Number(detailsPathC["path_index"]));
+        ], Number(detailsPathC_levelA["path_index"]));
         var all_possible_pathsB = getAllPossiblePaths(getConectionArrayPaths(pathsLevelB), [
-            [Number(detailsPathB["path_index"])]
-        ], Number(detailsPathC["path_index"]));
-        var spath = getShortestPathDifferentLevels(detailsPathA, detailsPathB, all_possible_pathsA, all_possible_pathsB, strais_elevators[i], roomA, roomB, detailsPathC);
+            [Number(detailsPathC_levelB["path_index"])]
+        ], Number(detailsPathB["path_index"]));
+        var spath = getShortestPathDifferentLevels(detailsPathA, detailsPathB, all_possible_pathsA, all_possible_pathsB, strais_elevators[i], roomA, roomB, detailsPathC_levelA);
         var current_distance = spath[0]["distance"] + spath[1]["distance"];
         if (current_distance < min_distance) {
             min_distance = current_distance;
@@ -653,8 +677,8 @@ function displayFullNavigation(level, shortest_path) {
             // draw circle at the destination
             drawCircle(ctx, to_room_object.door_coordinates[0] * canvas.width / 100, to_room_object.door_coordinates[1] * canvas.height / 100, "rgba(34,139,34, 0.6)")
         }
-        for (var i in paths[from_room_object.level]) {
-            //drawLineRelative(ctx, paths[from_room_object.level][i].startPoint, paths[from_room_object.level][i].endPoint, canvas.width, canvas.height, "orange")
+        for (var i in paths[to_room_object.level]) {
+            //drawLineRelative(ctx, paths[to_room_object.level][i].startPoint, paths[to_room_object.level][i].endPoint, canvas.width, canvas.height, "orange")
         }
         displayRouteBetweenPoints(ctx, points_on_route, canvas.width, canvas.height);
     };
@@ -662,7 +686,12 @@ function displayFullNavigation(level, shortest_path) {
 }
 
 function nextStepClicked() {
-    //alert(JSON.stringify(shortest_nav_path2))
+    if (shortest_nav_path1["directions"].length == 0 && (!shortest_nav_path2 || shortest_nav_path2["directions"].length == 0)) {
+        // new route from old destination
+        setFromAndToRoom(to_room_object.room_nr, null);
+        return;
+    }
+    $("#label_next_step").text(strings["next_step"][language_index])
     if (shortest_nav_path2) {
         if (shortest_nav_path1["directions"].length == 0) {
             if (shortest_nav_path2["points_on_route"].length > shortest_nav_path2["dist"].length + 2) {
@@ -691,6 +720,9 @@ function nextStepClicked() {
                 shortest_nav_path1["points_on_route"] = shortest_nav_path1["points_on_route"].splice(1)
             }
             displayFullNavigation(from_room_object.level, shortest_nav_path1)
+            if (shortest_nav_path1["dist"].length == 0) {
+                $("#label_next_step").text(($("#etagen_btn" + Number(to_room_object.level)).text()) + " " + strings["reached"][language_index]);
+            }
         }
     } else {
         if (shortest_nav_path1["points_on_route"].length > shortest_nav_path1["dist"].length + 2) {
@@ -714,9 +746,10 @@ function navigationFinished() {
     $("#arrow").css("display", "none");
     $("#distance").css("margin", "10%");
     $("#distance").css("display", "block");
-    $("#next_step").css("display", "none")
-    $("#distance").text(strings["destination_reached"][language_index]);
-    //alert(strings["destination_reached"][language_index])
+    $("#cancel").css("display", "none")
+    $("#label_next_step").text(strings["new_route_from_here"][language_index])
+    $("#info").css("margin", "20%")
+    $("#info").html("<b>" + strings["destination_reached"][language_index] + "</b>");
 }
 
 function displayRouteBetweenPoints(ctx, full_path, imageWidth, imageHeigth) {
@@ -910,12 +943,22 @@ canvas.addEventListener('click', function(e) {
             setImageWithoutRoute(etagen_nummer, room_obj)
             $("#room_details").css("display", "block");
             currently_selected_room = room_obj;
-            if (from_room_object) {
-                $("#room_details").html("<b>" + strings["room_nr"][language_index] + ":</b> " + room_obj.room_nr + "<span style='padding-left:25px'><btn class='btn btn-primary' onclick='setToRoomCurrentlySelected()' style='font-size:0.8em'>=> " + strings["navigate_to_room"][language_index] + "</btn></span><br>" +
-                    "<b>" + strings["institute"][language_index] + ": </b>" + room_obj.institute["name"] + "")
+            if (room_obj.room_nr.length == 0 && room_obj.description.length > 0) {
+                if (from_room_object) {
+                    $("#room_details").html("<b>" + strings[description.length][language_index] + ":</b> " + String(room_obj.room_nr) + "<span style='padding-left:25px'><btn class='btn btn-primary' onclick='setToRoomCurrentlySelected()' style='font-size:0.8em'>=> " + strings["navigate_to_room"][language_index] + "</btn></span><br>" +
+                        "<b>" + strings["institute"][language_index] + ": </b>" + room_obj.institute["name"] + "")
+                } else {
+                    $("#room_details").html("<b>" + strings["room_nr"][language_index] + ":</b> " + String(room_obj.room_nr) + "<span style='padding-left:25px'><btn class='btn btn-primary' onclick='setFromRoomCurrentlySelected()' style='font-size:0.8em'>=> " + strings["start_from_here"][language_index] + "</btn></span><br>" +
+                        "<b>" + strings["institute"][language_index] + ": </b>" + room_obj.institute["name"] + "")
+                }
             } else {
-                $("#room_details").html("<b>" + strings["room_nr"][language_index] + ":</b> " + String(room_obj.room_nr) + "<span style='padding-left:25px'><btn class='btn btn-primary' onclick='setFromRoomCurrentlySelected()' style='font-size:0.8em'>=> " + strings["start_from_here"][language_index] + "</btn></span><br>" +
-                    "<b>" + strings["institute"][language_index] + ": </b>" + room_obj.institute["name"] + "")
+                if (from_room_object) {
+                    $("#room_details").html("<b>" + strings["room_nr"][language_index] + ":</b> " + String(room_obj.room_nr) + "<span style='padding-left:25px'><btn class='btn btn-primary' onclick='setToRoomCurrentlySelected()' style='font-size:0.8em'>=> " + strings["navigate_to_room"][language_index] + "</btn></span><br>" +
+                        "<b>" + strings["institute"][language_index] + ": </b>" + room_obj.institute["name"] + "")
+                } else {
+                    $("#room_details").html("<b>" + strings["room_nr"][language_index] + ":</b> " + String(room_obj.room_nr) + "<span style='padding-left:25px'><btn class='btn btn-primary' onclick='setFromRoomCurrentlySelected()' style='font-size:0.8em'>=> " + strings["start_from_here"][language_index] + "</btn></span><br>" +
+                        "<b>" + strings["institute"][language_index] + ": </b>" + room_obj.institute["name"] + "")
+                }
             }
         }
     }
@@ -991,6 +1034,18 @@ function setToRoom(to_room_number) {
     }
     if (to_room_number) {
         end_loc += "&" + to_room_param_str + "=" + to_room_number;
+    }
+    window.location = end_loc;
+}
+
+function setFromAndToRoom(from_room_number, to_room_number) {
+    var current_loc = window.location + "";
+    var end_loc = current_loc.substr(0, current_loc.indexOf(".html") + 5) + "?" + language_param_str + "=" + lang;
+    if (to_room_number) {
+        end_loc += "&" + to_room_param_str + "=" + to_room_number;
+    }
+    if (from_room_number) {
+        end_loc += "&" + from_room_param_str + "=" + from_room_number;
     }
     window.location = end_loc;
 }

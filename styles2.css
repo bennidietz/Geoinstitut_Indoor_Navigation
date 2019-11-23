@@ -176,3 +176,9 @@ input[type=submit] {
     background-color: DodgerBlue !important;
     color: #ffffff;
 }
+
+#info {
+    color: green;
+    font-size: 4em;
+    text-align: center;
+}

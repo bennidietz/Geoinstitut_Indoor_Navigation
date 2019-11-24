@@ -78,6 +78,8 @@ class Room {
         ];
         this.openingHours = [json["hoursStart"], json["hoursEnd"]];
         this.description = json["description"];
+        this.width = Number(json["x2"]) - Number(json["x1"]);
+        this.height = Number(json["y2"]) - Number(json["y1"]);
     }
 
     getInstitutName(institut_json) {
@@ -300,12 +302,13 @@ function onRoomsLoaded() {
         $('.next_step_table_field').removeClass('next_step_table_field').addClass('next_step_table_field_desktop');
         $('.labels_footer_table').removeClass('labels_footer_table').addClass('labels_footer_table_desktop');
     } else {
-        $(".etagen_btn").css("height", "70");
+        $(".etagen_btn").css("height", "80");
         $(".etagen_btn").css("padding-top", "12");
         $(".etagen_btn").css("font-size", "1.8em");
     }
     if (mapfullwidth) {
-        $(".arrow_table").css("maxWidth", window.innerHeight);
+        var used_height_space = window.innerHeight - ($("#myHeader").height() + document.getElementById('canvas').height + $("#footer_table").height() + 80);
+        $(".arrow_table").css("maxWidth", used_height_space);
         $("#arrow").css("maxWidth", (window.innerHeight - window.innerWidth) / 3);
     } else {
         $(".arrow_table").css("maxWidth", "50%");
@@ -313,6 +316,7 @@ function onRoomsLoaded() {
     if (!to_room_object || !from_room_object) {
         displayInfoBottom(strings["select_room"][language_index])
     }
+    $("#myHeader").css("width", window.innerWidth + 30);
     showMainSection();
 }
 
@@ -824,6 +828,10 @@ function stringsAreEqual(str1, str2) {
 }
 
 $(".etagen_btn").on("click", function() {
+    if (from_room_object && to_room_object) {
+        // navigation is displayed - disable buttons
+        return;
+    }
     etagen_nummer = Number(this.id.replace("etagen_btn", ""))
     if (from_room_object && to_room_object) {
         displayFullNavigation(etagen_nummer, shortest_nav_path1);
@@ -863,7 +871,11 @@ function setImageWithoutRoute(level, roomHighlighted) {
         }
         for (var i in rooms_order_after_level[level]) {
             highLightRoom(ctx, rooms_order_after_level[level][i].spatial_extend, canvas.width, canvas.height, "rgba(0, 100, 0, 0.1)")
-            canvasWriteText(ctx, rooms_order_after_level[level][i].spatial_extend, canvas.width, canvas.height, rooms_order_after_level[level][i].room_nr)
+            if (rooms_order_after_level[level][i].width < 8) {
+                canvasWriteText(ctx, rooms_order_after_level[level][i].spatial_extend, canvas.width, canvas.height, rooms_order_after_level[level][i].room_nr, 20, 15, 7)
+            } else {
+                canvasWriteText(ctx, rooms_order_after_level[level][i].spatial_extend, canvas.width, canvas.height, rooms_order_after_level[level][i].room_nr, 25, 22, 10)
+            }
         }
         if (roomHighlighted) {
             highLightRoom(ctx, roomHighlighted.spatial_extend, canvas.width, canvas.height, "rgba(0, 100, 0, 0.5)")
@@ -872,13 +884,10 @@ function setImageWithoutRoute(level, roomHighlighted) {
     img.src = getImageURLForLevel(level);
 }
 
-function canvasWriteText(ctx, spatial_extend, cvwidth, cvheight, text) {
-
-    console.log((spatial_extend[0][0] + spatial_extend[1][0]) / 2 * cvwidth / 100)
-    console.log((spatial_extend[0][1] + spatial_extend[1][1]) / 2 * cvheight / 100)
-    ctx.font = "25px Arial";
+function canvasWriteText(ctx, spatial_extend, cvwidth, cvheight, text, text_size, shift_X_minus, shift_Y_plus) {
+    ctx.font = text_size + "px Arial";
     ctx.fillStyle = "rgb(0,0,0)"
-    ctx.fillText(text, (spatial_extend[0][0] + spatial_extend[1][0]) / 2 * cvwidth / 100 - 22, (spatial_extend[0][1] + spatial_extend[1][1]) / 2 * cvheight / 100 + 10);
+    ctx.fillText(text, (spatial_extend[0][0] + spatial_extend[1][0]) / 2 * cvwidth / 100 - shift_X_minus, (spatial_extend[0][1] + spatial_extend[1][1]) / 2 * cvheight / 100 + shift_Y_plus);
 }
 
 function highLightRoom(ctx, spatial_extend, cvwidth, cvheight, color) {

@@ -295,6 +295,10 @@ function onRoomsLoaded() {
         }
         autocomplete(document.getElementById("autocomplete_search"), autocomplete_options);
     }
+    if (!mapfullwidth) {
+        $(".cancel_table_field, .next_step_table_field, .cancel_table_field, header").css("padding-bottom", "3%")
+        $(".cancel_table_field, .next_step_table_field, .cancel_table_field, header").css("padding-top", "3%")
+    }
     if (!smartphone) {
         $('.header').removeClass('header').addClass('header_desktop');
         $('.labels_header_table').removeClass('labels_header_table').addClass('labels_header_table_desktop');

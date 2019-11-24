@@ -355,11 +355,13 @@ function calculateRoute(roomA, roomB) {
     for (var k in shortest_nav_path1["directions"]) {
         $(".scrollmenu").append('<table class="arrow_table"><thead><tr><th colspan="1" align="center"><img style="opacity:0.5" class="center arrow_images" src="' + getArrowPictureOfDirection(shortest_nav_path1["directions"][k]) + '"></th></tr><tr><th colspan="1" class="large_text distances" style="opacity:0.5">' + Math.round(shortest_nav_path1["dist"][k] * length_of_buidling / 100) + ' m</th></tr></thead></table>');
     }
-    for (var k in shortest_nav_path2["directions"]) {
-        if (k == 0) {
-            $(".scrollmenu").append('<table class="arrow_table"><thead><tr><th colspan="1" align="center"><img style="opacity:0.3" class="center arrow_images" src="symbols/stairs.png"></th></tr><tr><th colspan="1" class="large_text distances" style="opacity:0.5">' + $("#etagen_btn" + Number(to_room_object.level)).text() + '</th></tr></thead></table>');
-        } else {
-            $(".scrollmenu").append('<table class="arrow_table"><thead><tr><th colspan="1" align="center"><img style="opacity:0.3" class="center arrow_images" src="' + getArrowPictureOfDirection(shortest_nav_path2["directions"][k]) + '"></th></tr><tr><th colspan="1" class="large_text distances" style="opacity:0.5">' + Math.round(shortest_nav_path2["dist"][k] * length_of_buidling / 100) + ' m</th></tr></thead></table>');
+    if (shortest_nav_path2) {
+        for (var k in shortest_nav_path2["directions"]) {
+            if (k == 0) {
+                $(".scrollmenu").append('<table class="arrow_table"><thead><tr><th colspan="1" align="center"><img style="opacity:0.3" class="center arrow_images" src="symbols/stairs.png"></th></tr><tr><th colspan="1" class="large_text distances" style="opacity:0.5">' + $("#etagen_btn" + Number(to_room_object.level)).text() + '</th></tr></thead></table>');
+            } else {
+                $(".scrollmenu").append('<table class="arrow_table"><thead><tr><th colspan="1" align="center"><img style="opacity:0.3" class="center arrow_images" src="' + getArrowPictureOfDirection(shortest_nav_path2["directions"][k]) + '"></th></tr><tr><th colspan="1" class="large_text distances" style="opacity:0.5">' + Math.round(shortest_nav_path2["dist"][k] * length_of_buidling / 100) + ' m</th></tr></thead></table>');
+            }
         }
     }
     $(".scrollmenu").find(">:first-child").css("opacity", "1.0");

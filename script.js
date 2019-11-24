@@ -310,6 +310,9 @@ function onRoomsLoaded() {
     } else {
         $(".arrow_table").css("maxWidth", "50%");
     }
+    if (!to_room_object || !from_room_object) {
+        displayInfoBottom(strings["select_room"][language_index])
+    }
     showMainSection();
 }
 
@@ -761,8 +764,12 @@ function navigationFinished() {
     $("#distance").css("display", "block");
     $("#cancel").css("display", "none")
     $("#label_next_step").text(strings["new_route_from_here"][language_index])
-    $("#info").css("margin", "20%")
-    $("#info").html("<b>" + strings["destination_reached"][language_index] + "</b>");
+    displayInfoBottom("<b>" + strings["destination_reached"][language_index] + "</b>");
+}
+
+function displayInfoBottom(html_text) {
+    $("#info").css("margin", "5%");
+    $("#info").html(html_text);
 }
 
 function displayRouteBetweenPoints(ctx, full_path, imageWidth, imageHeigth) {
@@ -919,6 +926,7 @@ canvas.addEventListener('click', function(e) {
         if (pointIsWithinSpatialExtend([mouseX, mouseY], room_obj.spatial_extend)) {
             setImageWithoutRoute(etagen_nummer, room_obj)
             $("#room_details").css("display", "block");
+            $("#info").html("");
             currently_selected_room = room_obj;
             if (room_obj.room_nr.length == 0 && room_obj.description.length > 0) {
                 if (from_room_object) {

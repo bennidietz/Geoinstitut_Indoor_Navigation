@@ -9,6 +9,7 @@ const strings = {
     "reached": ["erreicht", "reached", ""],
     "level": ["Etage", "Level", "Plano"],
     "Exit": ["Ausgang", "Exit", ""],
+    "select_room": ["Klicken Sie auf einen Raum auf der Karte, um diesen auszuwählen", "Click on a room on the floor plan to select it", ""],
     "new_route_from_here": ["Neue Route von hier starten", "Start new route from here", ""],
     "destination_reached": ["Sie haben Ihr Ziel erreicht", "You reached your destination", ""],
     "destination_is_at": ["Das Ziel befindet sich ", "The destination is "],

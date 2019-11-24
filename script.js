@@ -745,28 +745,44 @@ function nextStepClicked() {
         setFromAndToRoom(to_room_object.room_nr, null);
         return;
     }
-    $(".scrollmenu").find(">:first-child").remove()
-    if (document.getElementsByClassName("arrow_images").length > 0) {
-        document.getElementsByClassName("arrow_images")[0].style.opacity = "1.0";
-        document.getElementsByClassName("distances")[0].style.opacity = "1.0";
-    }
-    $("#label_next_step").text(strings["next_step"][language_index])
-    if (shortest_nav_path2) {
-        if (shortest_nav_path1["directions"].length == 0) {
-            if (shortest_nav_path2["points_on_route"].length > shortest_nav_path2["dist"].length + 2) {
-                shortest_nav_path2["dist"] = shortest_nav_path2["dist"].splice(1)
-                shortest_nav_path2["directions"] = shortest_nav_path2["directions"].splice(1)
-                shortest_nav_path2["points_on_route"] = shortest_nav_path2["points_on_route"].splice(2)
+    $(".scrollmenu").find(">:first-child").fadeOut(function() {
+        $(".scrollmenu").find(">:first-child").remove()
+        if (document.getElementsByClassName("arrow_images").length > 0) {
+            document.getElementsByClassName("arrow_images")[0].style.opacity = "1.0";
+            document.getElementsByClassName("distances")[0].style.opacity = "1.0";
+        }
+        $("#label_next_step").text(strings["next_step"][language_index])
+        if (shortest_nav_path2) {
+            if (shortest_nav_path1["directions"].length == 0) {
+                if (shortest_nav_path2["points_on_route"].length > shortest_nav_path2["dist"].length + 2) {
+                    shortest_nav_path2["dist"] = shortest_nav_path2["dist"].splice(1)
+                    shortest_nav_path2["directions"] = shortest_nav_path2["directions"].splice(1)
+                    shortest_nav_path2["points_on_route"] = shortest_nav_path2["points_on_route"].splice(2)
+                } else {
+                    shortest_nav_path2["dist"] = shortest_nav_path2["dist"].splice(1)
+                    shortest_nav_path2["directions"] = shortest_nav_path2["directions"].splice(1)
+                    shortest_nav_path2["points_on_route"] = shortest_nav_path2["points_on_route"].splice(1)
+                }
+                etagen_nummer = to_room_object.level;
+                displayFullNavigation(etagen_nummer, shortest_nav_path2)
+                if (shortest_nav_path2["directions"].length == 0) {
+                    // navigation is finished
+                    navigationFinished();
+                }
             } else {
-                shortest_nav_path2["dist"] = shortest_nav_path2["dist"].splice(1)
-                shortest_nav_path2["directions"] = shortest_nav_path2["directions"].splice(1)
-                shortest_nav_path2["points_on_route"] = shortest_nav_path2["points_on_route"].splice(1)
-            }
-            etagen_nummer = to_room_object.level;
-            displayFullNavigation(etagen_nummer, shortest_nav_path2)
-            if (shortest_nav_path2["directions"].length == 0) {
-                // navigation is finished
-                navigationFinished();
+                if (shortest_nav_path1["points_on_route"].length > shortest_nav_path1["dist"].length + 2) {
+                    shortest_nav_path1["dist"] = shortest_nav_path1["dist"].splice(1)
+                    shortest_nav_path1["directions"] = shortest_nav_path1["directions"].splice(1)
+                    shortest_nav_path1["points_on_route"] = shortest_nav_path1["points_on_route"].splice(2)
+                } else {
+                    shortest_nav_path1["dist"] = shortest_nav_path1["dist"].splice(1)
+                    shortest_nav_path1["directions"] = shortest_nav_path1["directions"].splice(1)
+                    shortest_nav_path1["points_on_route"] = shortest_nav_path1["points_on_route"].splice(1)
+                }
+                displayFullNavigation(from_room_object.level, shortest_nav_path1)
+                if (shortest_nav_path1["dist"].length == 0) {
+                    $("#label_next_step").text(($("#etagen_btn" + Number(to_room_object.level)).text()) + " " + strings["reached"][language_index]);
+                }
             }
         } else {
             if (shortest_nav_path1["points_on_route"].length > shortest_nav_path1["dist"].length + 2) {
@@ -778,36 +794,24 @@ function nextStepClicked() {
                 shortest_nav_path1["directions"] = shortest_nav_path1["directions"].splice(1)
                 shortest_nav_path1["points_on_route"] = shortest_nav_path1["points_on_route"].splice(1)
             }
-            displayFullNavigation(from_room_object.level, shortest_nav_path1)
-            if (shortest_nav_path1["dist"].length == 0) {
-                $("#label_next_step").text(($("#etagen_btn" + Number(to_room_object.level)).text()) + " " + strings["reached"][language_index]);
+            displayFullNavigation(etagen_nummer, shortest_nav_path1)
+            if (shortest_nav_path1["directions"].length == 0) {
+                // navigation is finished
+                navigationFinished();
             }
         }
-    } else {
-        if (shortest_nav_path1["points_on_route"].length > shortest_nav_path1["dist"].length + 2) {
-            shortest_nav_path1["dist"] = shortest_nav_path1["dist"].splice(1)
-            shortest_nav_path1["directions"] = shortest_nav_path1["directions"].splice(1)
-            shortest_nav_path1["points_on_route"] = shortest_nav_path1["points_on_route"].splice(2)
-        } else {
-            shortest_nav_path1["dist"] = shortest_nav_path1["dist"].splice(1)
-            shortest_nav_path1["directions"] = shortest_nav_path1["directions"].splice(1)
-            shortest_nav_path1["points_on_route"] = shortest_nav_path1["points_on_route"].splice(1)
-        }
-        displayFullNavigation(etagen_nummer, shortest_nav_path1)
-        if (shortest_nav_path1["directions"].length == 0) {
-            // navigation is finished
-            navigationFinished();
-        }
-    }
+    });
 }
 
 function navigationFinished() {
+    startConfetti()
     $("#arrow").css("display", "none");
     $("#distance").css("margin", "10%");
     $("#distance").css("display", "block");
     $("#cancel").css("display", "none")
     $("#label_next_step").text(strings["new_route_from_here"][language_index])
     displayInfoBottom("<b>" + strings["destination_reached"][language_index] + "</b>");
+    setTimeout(function() { stopConfetti(); }, 2000);
 }
 
 function displayInfoBottom(html_text) {
@@ -819,7 +823,14 @@ function displayRouteBetweenPoints(ctx, full_path, imageWidth, imageHeigth) {
     ctx.beginPath();
     for (var i = 0; i < full_path.length - 1; i++) {
         ctx.moveTo(full_path[i][0] * imageWidth / 100, full_path[i][1] * imageHeigth / 100);
-        ctx.lineTo(full_path[i + 1][0] * imageWidth / 100, full_path[i + 1][1] * imageHeigth / 100);
+        var plus_X = 0;
+        var plus_Y = 0;
+        if (full_path[i][0] == full_path[i + 1][0]) {
+            plus_Y = 2.5;
+        } else {
+            plus_X = 2.5;
+        }
+        ctx.lineTo(full_path[i + 1][0] * imageWidth / 100 + plus_X, full_path[i + 1][1] * imageHeigth / 100 + plus_Y);
     }
     ctx.lineWidth = 5;
     ctx.strokeStyle = "red";

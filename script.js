@@ -675,7 +675,7 @@ function displayFullNavigation(level, shortest_path) {
 
     var points_on_route = shortest_path["points_on_route"];
     var canvas = document.getElementById('canvas');
-    if (!mapfullwidth) screen_width = screen_width * 4.5 / 10; // Desktop Version
+    if (!mapfullwidth) screen_width = window.innerWidth * 4.5 / 10; // Desktop Version
     canvas.width = screen_width;
     canvas.height = screen_width;
     var img = new Image();
@@ -839,7 +839,7 @@ function remainHeaderOnTop() {
 
 function setImageWithoutRoute(level, roomHighlighted) {
     var canvas = document.getElementById('canvas');
-    if (!mapfullwidth) screen_width = screen_width * 4.5 / 10; // Desktop Version
+    if (!mapfullwidth) screen_width = window.innerWidth * 4.5 / 10; // Desktop Version
     canvas.width = screen_width;
     canvas.height = screen_width;
     var img = new Image();

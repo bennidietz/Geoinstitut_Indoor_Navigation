@@ -30,7 +30,7 @@ console.log("width: " + window.innerWidth + " - height: " + window.innerHeight)
 if (window.innerWidth > window.innerHeight) {
     smartphone = false;
 }
-if (window.innerWidth * 1.7 > window.innerHeight) {
+if (window.innerWidth * 1.68 > window.innerHeight) {
     mapfullwidth = false;
 }
 console.log("Smartphone: " + smartphone)
@@ -224,8 +224,19 @@ class Elevator_Stairs {
 
 
 $(function() {
+    showLoader();
     storeRoomsOfBuilding();
 });
+
+function showLoader() {
+    document.getElementById("loader").style.display = "block";
+    document.getElementById("main_section").style.display = "none";
+}
+
+function showMainSection() {
+    document.getElementById("loader").style.display = "none";
+    document.getElementById("main_section").style.display = "block";
+}
 
 function onRoomsLoaded() {
     // rooms from database are loaded
@@ -298,6 +309,7 @@ function onRoomsLoaded() {
     } else {
         $(".arrow_table").css("maxWidth", "50%");
     }
+    showMainSection();
 }
 
 function calculateRoute(roomA, roomB) {
@@ -792,55 +804,6 @@ function cancelClicked() {
 }
 
 function storeRoomsOfBuilding() {
-    var paths_data = {
-        "EG": [{
-            "start": ["5.40", "24.04"],
-            "end": ["81.27", "24.04"],
-            "color": "blue"
-        }, {
-            "start": ["81.27", "5.03"],
-            "end": ["81.27", "87.35"],
-            "color": "red"
-        }, {
-            "start": ["18.90", "94.69"],
-            "end": ["18.90", "24.04"],
-            "color": "pink"
-        }, {
-            "start": ["18.90", "51.39"],
-            "end": ["81.27", "51.39"],
-            "color": "yellow"
-        }, {
-            "start": ["63.74", "51.39"],
-            "end": ["63.74", "87.35"],
-            "color": "cyan"
-        }],
-        "1OG": [{
-            "start": ["5.40", "24.04"],
-            "end": ["81.27", "24.04"],
-            "color": "blue"
-        }, {
-            "start": ["81.27", "5.14"],
-            "end": ["81.27", "80.84"],
-            "color": "red"
-        }, {
-            "start": ["94.69", "80.84"],
-            "end": ["18.90", "80.84"],
-            "color": "green"
-        }, {
-            "start": ["18.90", "94.69"],
-            "end": ["18.90", "24.04"],
-            "color": "pink"
-        }, {
-            "start": ["18.90", "51.39"],
-            "end": ["81.27", "51.39"],
-            "color": "yellow"
-        }, {
-            "start": ["54.01", "51.39"],
-            "end": ["54.01", "80.84"],
-            "color": "cyan"
-        }]
-    };
-
     api("rooms", "all")
 }
 

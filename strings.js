@@ -1,6 +1,6 @@
 // Syntax: [german, english, spanish]
 const strings = {
-    "cancel": ["Beenden", "Cancel", "Terminar"],
+    "cancel": ["Navigation beenden", "Cancel navigation", "Terminar"],
     "next_step": ["Zum nächsten Schritt", "Next step", "Al siguiente paso"],
     "from_room": ["Von Raum", "From room", "Desde habitación"],
     "to_room": ["Nach Raum", "To room", "Después habitación"],

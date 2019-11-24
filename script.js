@@ -9,6 +9,7 @@ var from_room = current_url.searchParams.get(from_room_param_str);
 var to_room = current_url.searchParams.get(to_room_param_str);
 var lang = current_url.searchParams.get(language_param_str);
 var screen_width = window.innerWidth;
+var scale_desktop_version_canvas = 6 / 10;
 if (to_room) {
     var to_level = to_room.substr(0, 1);
 }
@@ -675,7 +676,7 @@ function displayFullNavigation(level, shortest_path) {
 
     var points_on_route = shortest_path["points_on_route"];
     var canvas = document.getElementById('canvas');
-    if (!mapfullwidth) screen_width = window.innerWidth * 4.5 / 10; // Desktop Version
+    if (!mapfullwidth) screen_width = window.innerWidth * scale_desktop_version_canvas; // Desktop Version
     canvas.width = screen_width;
     canvas.height = screen_width;
     var img = new Image();
@@ -839,7 +840,7 @@ function remainHeaderOnTop() {
 
 function setImageWithoutRoute(level, roomHighlighted) {
     var canvas = document.getElementById('canvas');
-    if (!mapfullwidth) screen_width = window.innerWidth * 4.5 / 10; // Desktop Version
+    if (!mapfullwidth) screen_width = window.innerWidth * scale_desktop_version_canvas; // Desktop Version
     canvas.width = screen_width;
     canvas.height = screen_width;
     var img = new Image();

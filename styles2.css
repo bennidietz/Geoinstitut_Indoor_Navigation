@@ -22,7 +22,7 @@ th {
 
 .cancel_table_field {
     background: red;
-    padding: 7% 5%;
+    padding: 5% 3%;
 }
 
 .cancel_table_field_desktop {
@@ -32,7 +32,7 @@ th {
 
 .next_step_table_field {
     background: green;
-    padding: 7% 5%;
+    padding: 5% 3%;
 }
 
 .table_spinner {

@@ -327,7 +327,7 @@ function calculateRoute(roomA, roomB) {
     var detailsPathB = getDetailsOfNearestPath(roomB.door_coordinates, paths[level_string]);
 
     if (roomA.level == roomB.level) {
-        shortest_nav_path1 = getShortestPathBetweenPointsOnPaths(detailsPathA["point"], detailsPathA["path_index"], detailsPathB["point"], detailsPathB["path_index"], paths[level_string]);
+        shortest_nav_path1 = getShortestPathBetweenPointsOnPaths(detailsPathA["point"], detailsPathA["path_index"], detailsPathB["point"], detailsPathB["path_index"], paths[level_string], roomA, roomB);
         //displayRouteTrial(level_string, shortest_nav_path1["points_on_route"])
         if (etagen_nummer == from_room_object.level || etagen_nummer == to_room_object.level) {
             shortest_nav_path1["points_on_route"].splice(0, 0, from_room_object.door_coordinates);
@@ -395,20 +395,12 @@ function getArrowPictureOfDirection(direction) {
     var file = "symbols/";
     switch (direction) {
         case 0:
-            //top
-            file += "arrow_up";
+            //left
+            file += "arrow_left";
             break;
         case 1:
             //right
             file += "arrow_right";
-            break;
-        case 2:
-            //bottom
-            file += "arrow_down";
-            break;
-        case 3:
-            //left
-            file += "arrow_left";
             break;
         default:
             break;
@@ -416,12 +408,12 @@ function getArrowPictureOfDirection(direction) {
     return file + ".png";
 }
 
-function getShortestPathBetweenPointsOnPaths(pointA, pathA_index, pointB, pathB_index, path_array) {
+function getShortestPathBetweenPointsOnPaths(pointA, pathA_index, pointB, pathB_index, path_array, roomA, roomB) {
     var path_connections = getConectionArrayPaths(path_array);
     var all_possible_paths = getAllPossiblePaths(path_connections, [
         [Number(pathA_index)]
     ], Number(pathB_index));
-    return getShortestPath(path_array, all_possible_paths, pointA, pointB);
+    return getShortestPath(path_array, all_possible_paths, pointA, pointB, roomA, roomB);
 }
 
 function getShortestPathBetweenPointsOnPathsForDifferentLevels(roomA, roomB) {
@@ -430,7 +422,6 @@ function getShortestPathBetweenPointsOnPathsForDifferentLevels(roomA, roomB) {
 
     var detailsPathA = getDetailsOfNearestPath(roomA.door_coordinates, pathsLevelA);
     var detailsPathB = getDetailsOfNearestPath(roomB.door_coordinates, pathsLevelB);
-    console.log(detailsPathB)
     var min_distance = 1000; // unrealistic maximal distance
     var min_paths = null;
     for (var i in strais_elevators) {
@@ -461,11 +452,9 @@ function getShortestPathDifferentLevels(detailsPathA, detailsPathB, all_possible
         "break_index": null
     };
 
-    var detailsPath1 = shortestPathGetInfos(all_possible_pathsA, paths[roomA.level], detailsPathA["point"], detailsPathC["point"])
+    var detailsPath1 = shortestPathGetInfos(all_possible_pathsA, paths[roomA.level], detailsPathA["point"], detailsPathC["point"], roomA, stairs_elevator, false)
 
-    var detailsPath2 = shortestPathGetInfos(all_possible_pathsB, paths[roomB.level], detailsPathC["point"], detailsPathB["point"])
-
-    var whole_distance = detailsPath1["distance"] + detailsPath2["distance"];
+    var detailsPath2 = shortestPathGetInfos(all_possible_pathsB, paths[roomB.level], detailsPathC["point"], detailsPathB["point"], stairs_elevator, roomB, true)
 
     //shortest_path["directions"] = detailsPath1["directions"].concat(detailsPath2["directions"])
     //shortest_path["dist"] = detailsPath1["dist"].concat(detailsPath2["dist"])
@@ -476,7 +465,7 @@ function getShortestPathDifferentLevels(detailsPathA, detailsPathB, all_possible
     return shortest_path;
 }
 
-function shortestPathGetInfos(all_possible_paths, all_paths, pointA, pointB) {
+function shortestPathGetInfos(all_possible_paths, all_paths, pointA, pointB, roomA, roomB, from_room_is_elevator) {
     var distance_path = 1000; // unrealistic maximal distance
     var output = {
         "distance": [],
@@ -492,25 +481,27 @@ function shortestPathGetInfos(all_possible_paths, all_paths, pointA, pointB) {
         if (all_possible_paths[k].length < 2) {
             output["points_on_route"] = [pointA, pointB];
             output["dist"] = [distanceBetweenTwoPoints(pointA, pointB)];
-            output["directions"] = [getDirectionOfRoute(pointA, pointB)];
+            output["directions"] = [getRelativeDirectionOfDecisionPoint(roomA.door_coordinates, pointA, pointB, !from_room_is_elevator)];
             return output;
         }
+        var tmp_point0 = roomA.door_coordinates;
         var tmp_point = pointWherePathsAreConnected(all_paths[all_possible_paths[k][0]], all_paths[all_possible_paths[k][1]]);
         var tmp_pointsArray = [pointA, tmp_point];
         var tmp_distance = distanceBetweenTwoPoints(pointA, tmp_point);
         dist_ances.push(tmp_distance)
-        directions.push(getDirectionOfRoute(pointA, tmp_point))
+        directions.push(getRelativeDirectionOfDecisionPoint(tmp_point0, pointA, tmp_point, !from_room_is_elevator))
         for (var i = 1; i < all_possible_paths[k].length - 1; i++) {
             var dist = distanceBetweenTwoPoints(tmp_point, pointWherePathsAreConnected(all_paths[all_possible_paths[k][i]], all_paths[all_possible_paths[k][i + 1]]));
             tmp_distance += dist;
             dist_ances.push(dist)
-            directions.push(getDirectionOfRoute(tmp_point, pointWherePathsAreConnected(all_paths[all_possible_paths[k][i]], all_paths[all_possible_paths[k][i + 1]])))
+            directions.push(getRelativeDirectionOfDecisionPoint(tmp_point0, tmp_point, pointWherePathsAreConnected(all_paths[all_possible_paths[k][i]], all_paths[all_possible_paths[k][i + 1]]), false))
+            tmp_point0 = tmp_point;
             tmp_point = pointWherePathsAreConnected(all_paths[all_possible_paths[k][i]], all_paths[all_possible_paths[k][i + 1]]);
             tmp_pointsArray.push(tmp_point);
         }
         tmp_distance += distanceBetweenTwoPoints(tmp_point, pointB);
         dist_ances.push(distanceBetweenTwoPoints(tmp_point, pointB))
-        directions.push(getDirectionOfRoute(tmp_point, pointB))
+        directions.push(getRelativeDirectionOfDecisionPoint(tmp_point0, tmp_point, pointB, false))
         tmp_pointsArray.push(pointB);
         points = tmp_pointsArray;
         if (tmp_distance < distance_path) {
@@ -524,7 +515,7 @@ function shortestPathGetInfos(all_possible_paths, all_paths, pointA, pointB) {
     return output;
 }
 
-function getShortestPath(all_paths, all_paths_indexes, pointA, pointB) {
+function getShortestPath(all_paths, all_paths_indexes, pointA, pointB, roomA, roomB) {
     var distance_path = 1000; // unrealistic maximal distance
     var shortest_path = {
         "points_on_route": null,
@@ -537,25 +528,27 @@ function getShortestPath(all_paths, all_paths_indexes, pointA, pointB) {
         if (all_paths_indexes[j].length < 2) {
             shortest_path["points_on_route"] = [pointA, pointB];
             shortest_path["dist"] = [distanceBetweenTwoPoints(pointA, pointB)];
-            shortest_path["directions"] = [getDirectionOfRoute(pointA, pointB)];
+            shortest_path["directions"] = [getRelativeDirectionOfDecisionPoint(roomA.door_coordinates, pointA, pointB, true)];
             return shortest_path;
         }
+        var tmp_point0 = pointA;
         var tmp_point = pointWherePathsAreConnected(all_paths[all_paths_indexes[j][0]], all_paths[all_paths_indexes[j][1]]);
         var tmp_pointsArray = [pointA, tmp_point];
         var tmp_distance = distanceBetweenTwoPoints(pointA, tmp_point);
         distances.push(tmp_distance)
-        directions.push(getDirectionOfRoute(pointA, tmp_point))
+        directions.push(getRelativeDirectionOfDecisionPoint(roomA.door_coordinates, tmp_point0, tmp_point, true))
         for (var i = 1; i < all_paths_indexes[j].length - 1; i++) {
             var dist = distanceBetweenTwoPoints(tmp_point, pointWherePathsAreConnected(all_paths[all_paths_indexes[j][i]], all_paths[all_paths_indexes[j][i + 1]]));
             tmp_distance += dist;
             distances.push(dist)
-            directions.push(getDirectionOfRoute(tmp_point, pointWherePathsAreConnected(all_paths[all_paths_indexes[j][i]], all_paths[all_paths_indexes[j][i + 1]])))
+            directions.push(getRelativeDirectionOfDecisionPoint(tmp_point0, tmp_point, pointWherePathsAreConnected(all_paths[all_paths_indexes[j][i]], all_paths[all_paths_indexes[j][i + 1]]), false))
+            tmp_point0 = tmp_point;
             tmp_point = pointWherePathsAreConnected(all_paths[all_paths_indexes[j][i]], all_paths[all_paths_indexes[j][i + 1]]);
             tmp_pointsArray.push(tmp_point);
         }
         tmp_distance += distanceBetweenTwoPoints(tmp_point, pointB);
         distances.push(distanceBetweenTwoPoints(tmp_point, pointB))
-        directions.push(getDirectionOfRoute(tmp_point, pointB))
+        directions.push(getRelativeDirectionOfDecisionPoint(tmp_point0, tmp_point, pointB, false))
         tmp_pointsArray.push(pointB)
         if (tmp_distance < distance_path) {
             distance_path = tmp_distance;
@@ -566,24 +559,58 @@ function getShortestPath(all_paths, all_paths_indexes, pointA, pointB) {
     }
     return shortest_path;
 }
+// returns:
+// left: 0; right: 1
+function getRelativeDirectionOfDecisionPoint(pointA, pointB, pointC, from_qr_code) {
+    var first_dir = getDirectionOfRoute(pointA, pointB);
+    var second_dir = getDirectionOfRoute(pointB, pointC);
+    if (from_qr_code) {
+        first_dir = -first_dir;
+    }
+    if (first_dir == 1) {
+        if (second_dir == -2) {
+            return 0;
+        } else {
+            return 1;
+        }
+    } else if (first_dir == -1) {
+        if (second_dir == -2) {
+            return 1;
+        } else {
+            return 0;
+        }
+    } else if (first_dir == 2) {
+        if (second_dir == 1) {
+            return 0;
+        } else {
+            return 1;
+        }
+    } else if (first_dir == -2) {
+        if (second_dir == 1) {
+            return 1;
+        } else {
+            return 0;
+        }
+    }
+}
 
 // returns:
-// top: 0; right: 1; bottom: 2; left: 3
+// top: 1; right: 2; bottom: -1; left: -2
 function getDirectionOfRoute(from_point, to_point) {
     var x = to_point[0] - from_point[0]
     var y = to_point[1] - from_point[1]
     if (x != 0) {
         if (x > 0) {
-            return 1;
+            return 2;
         } else {
-            return 3;
+            return -2;
         }
     }
     if (y != 0) {
         if (y > 0) {
-            return 2;
+            return -1;
         } else {
-            return 0;
+            return 1;
         }
     }
 }

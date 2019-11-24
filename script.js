@@ -73,8 +73,8 @@ class Room {
         this.level = json["level"]["id"];
         this.door_coordinates = [Number(json["doorX"]), Number(json["doorY"])];
         this.spatial_extend = [
-            [json["x1"], json["y1"]],
-            [json["x2"], json["y2"]]
+            [Number(json["x1"]), Number(json["y1"])],
+            [Number(json["x2"]), Number(json["y2"])]
         ];
         this.openingHours = [json["hoursStart"], json["hoursEnd"]];
         this.description = json["description"];
@@ -854,11 +854,24 @@ function setImageWithoutRoute(level, roomHighlighted) {
             // draw circle at the destination
             drawCircle(ctx, to_room_object.door_coordinates[0] * canvas.width / 100, to_room_object.door_coordinates[1] * canvas.height / 100, "rgba(34,139,34, 0.6)")
         }
+        for (var i in rooms_order_after_level[level]) {
+            highLightRoom(ctx, rooms_order_after_level[level][i].spatial_extend, canvas.width, canvas.height, "rgba(0, 100, 0, 0.1)")
+            canvasWriteText(ctx, rooms_order_after_level[level][i].spatial_extend, canvas.width, canvas.height, rooms_order_after_level[level][i].room_nr)
+        }
         if (roomHighlighted) {
-            highLightRoom(ctx, roomHighlighted.spatial_extend, canvas.width, canvas.height, "rgba(124, 252, 0, 0.4)")
+            highLightRoom(ctx, roomHighlighted.spatial_extend, canvas.width, canvas.height, "rgba(0, 100, 0, 0.5)")
         }
     };
     img.src = getImageURLForLevel(level);
+}
+
+function canvasWriteText(ctx, spatial_extend, cvwidth, cvheight, text) {
+
+    console.log((spatial_extend[0][0] + spatial_extend[1][0]) / 2 * cvwidth / 100)
+    console.log((spatial_extend[0][1] + spatial_extend[1][1]) / 2 * cvheight / 100)
+    ctx.font = "25px Arial";
+    ctx.fillStyle = "rgb(0,0,0)"
+    ctx.fillText(text, (spatial_extend[0][0] + spatial_extend[1][0]) / 2 * cvwidth / 100 - 22, (spatial_extend[0][1] + spatial_extend[1][1]) / 2 * cvheight / 100 + 10);
 }
 
 function highLightRoom(ctx, spatial_extend, cvwidth, cvheight, color) {

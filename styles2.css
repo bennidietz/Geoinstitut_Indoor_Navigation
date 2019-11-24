@@ -250,3 +250,19 @@ input[type=submit] {
         opacity: 1
     }
 }
+
+div.scrollmenu {
+    overflow: auto;
+    white-space: nowrap;
+}
+
+div.scrollmenu table {
+    display: inline-block;
+    text-align: center;
+    padding: 14px;
+    text-decoration: none;
+}
+
+div.scrollmenu table:hover {
+    background-color: #777;
+}

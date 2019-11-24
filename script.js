@@ -287,7 +287,7 @@ function onRoomsLoaded() {
         // no autocomplete input needed
         $(".autocomplete").css("display", "none");
     } else {
-        $(".arrow_table").css("display", "none");
+        $(".scrollmenu").css("display", "none");
         $("#autocomplete_search").attr("placeholder", strings["autocomplete_placeholder"][language_index]);
         var autocomplete_options = [];
         for (var i in rooms_order_after_roomnr) {
@@ -308,10 +308,11 @@ function onRoomsLoaded() {
     }
     if (mapfullwidth) {
         var used_height_space = window.innerHeight - ($("#myHeader").height() + document.getElementById('canvas').height + $("#footer_table").height() + 80);
+        $(".arrow_table").css("maxHeight", used_height_space);
         $(".arrow_table").css("maxWidth", used_height_space);
-        $("#arrow").css("maxWidth", (window.innerHeight - window.innerWidth) / 3);
+        $(".arrow_images").css("maxWidth", (window.innerHeight - window.innerWidth) / 3);
     } else {
-        $(".arrow_table").css("maxWidth", "50%");
+        $(".arrow_table").css("maxHeight", "50%");
     }
     if (!to_room_object || !from_room_object) {
         displayInfoBottom(strings["select_room"][language_index])
@@ -349,11 +350,21 @@ function calculateRoute(roomA, roomB) {
 
         displayFullNavigation(from_room_object.level, shortest_nav_path1);
     }
-}
-
-function displayDestinationReached(direction_of_desination) {
-    $("#arrow").css("display", "none");
-    $("#distance").text("");
+    console.log(shortest_nav_path1)
+    console.log(shortest_nav_path2)
+    for (var k in shortest_nav_path1["directions"]) {
+        $(".scrollmenu").append('<table class="arrow_table"><thead><tr><th colspan="1" align="center"><img style="opacity:0.5" class="center arrow_images" src="' + getArrowPictureOfDirection(shortest_nav_path1["directions"][k]) + '"></th></tr><tr><th colspan="1" class="large_text distances" style="opacity:0.5">' + Math.round(shortest_nav_path1["dist"][k] * length_of_buidling / 100) + ' m</th></tr></thead></table>');
+    }
+    for (var k in shortest_nav_path2["directions"]) {
+        if (k == 0) {
+            $(".scrollmenu").append('<table class="arrow_table"><thead><tr><th colspan="1" align="center"><img style="opacity:0.3" class="center arrow_images" src="symbols/stairs.png"></th></tr><tr><th colspan="1" class="large_text distances" style="opacity:0.5">' + $("#etagen_btn" + Number(to_room_object.level)).text() + '</th></tr></thead></table>');
+        } else {
+            $(".scrollmenu").append('<table class="arrow_table"><thead><tr><th colspan="1" align="center"><img style="opacity:0.3" class="center arrow_images" src="' + getArrowPictureOfDirection(shortest_nav_path2["directions"][k]) + '"></th></tr><tr><th colspan="1" class="large_text distances" style="opacity:0.5">' + Math.round(shortest_nav_path2["dist"][k] * length_of_buidling / 100) + ' m</th></tr></thead></table>');
+        }
+    }
+    $(".scrollmenu").find(">:first-child").css("opacity", "1.0");
+    document.getElementsByClassName("arrow_images")[0].style.opacity = "1.0";
+    document.getElementsByClassName("distances")[0].style.opacity = "1.0";
 }
 
 if (document.layers) {
@@ -378,8 +389,7 @@ document.onkeydown = function(evt) {
     }
 };
 
-function displayArrow(direction, length) {
-    length = Math.round(length * length_of_buidling / 100)
+function getArrowPictureOfDirection(direction) {
     var file = "symbols/";
     switch (direction) {
         case 0:
@@ -401,9 +411,7 @@ function displayArrow(direction, length) {
         default:
             break;
     }
-    $("#arrow").css("display", "block");
-    $("#arrow").attr("src", file + ".png");
-    $("#distance").text(length + " m");
+    return file + ".png";
 }
 
 function getShortestPathBetweenPointsOnPaths(pointA, pathA_index, pointB, pathB_index, path_array) {
@@ -676,9 +684,6 @@ function displayFullNavigation(level, shortest_path) {
     if (shortest_path["directions"].length == 0 && shortest_path["points_on_route"].length > 1) {
         var direction_of_desination = getDirectionOfRoute(shortest_path["points_on_route"][0], shortest_path["points_on_route"][1])
         shortest_path["points_on_route"] = shortest_path["points_on_route"].splice(1);
-        displayDestinationReached(direction_of_desination)
-    } else if (shortest_path["directions"].length > 0) {
-        displayArrow(shortest_path["directions"][0], shortest_path["dist"][0]);
     }
 
     var points_on_route = shortest_path["points_on_route"];
@@ -710,6 +715,11 @@ function nextStepClicked() {
         // new route from old destination
         setFromAndToRoom(to_room_object.room_nr, null);
         return;
+    }
+    $(".scrollmenu").find(">:first-child").remove()
+    if (document.getElementsByClassName("arrow_images").length > 0) {
+        document.getElementsByClassName("arrow_images")[0].style.opacity = "1.0";
+        document.getElementsByClassName("distances")[0].style.opacity = "1.0";
     }
     $("#label_next_step").text(strings["next_step"][language_index])
     if (shortest_nav_path2) {

@@ -306,14 +306,10 @@ function onRoomsLoaded() {
         $(".etagen_btn").css("padding-top", "12");
         $(".etagen_btn").css("font-size", "1.8em");
     }
-    if (mapfullwidth) {
-        var used_height_space = window.innerHeight - ($("#myHeader").height() + document.getElementById('canvas').height + $("#footer_table").height() + 80);
-        $(".arrow_table").css("maxHeight", used_height_space);
-        $(".arrow_table").css("maxWidth", used_height_space);
-        $(".arrow_images").css("maxWidth", (window.innerHeight - window.innerWidth) / 3);
-    } else {
-        $(".arrow_table").css("maxHeight", "50%");
-    }
+    var used_height_space = window.innerHeight - ($("#myHeader").height() + document.getElementById('canvas').height + $("#footer_table").height() + 80);
+    $(".arrow_table").css("maxHeight", used_height_space);
+    $(".arrow_table").css("maxWidth", used_height_space);
+    $(".arrow_images").css("maxWidth", (window.innerHeight - window.innerWidth) / 3);
     if (!to_room_object || !from_room_object) {
         displayInfoBottom(strings["select_room"][language_index])
     }

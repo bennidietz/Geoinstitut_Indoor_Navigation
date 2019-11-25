@@ -851,14 +851,16 @@ function displayInfoBottom(html_text) {
 function displayRouteBetweenPoints(ctx, full_path, imageWidth, imageHeigth) {
     ctx.beginPath();
     for (var i = 0; i < full_path.length - 1; i++) {
-        ctx.moveTo(full_path[i][0] * imageWidth / 100, full_path[i][1] * imageHeigth / 100);
         var plus_X = 0;
         var plus_Y = 0;
         if (full_path[i][0] == full_path[i + 1][0]) {
             plus_Y = 2.5;
+            if ((full_path[i + 1][1] - full_path[i][1]) < 0) plus_Y = -plus_Y;
         } else {
             plus_X = 2.5;
+            if ((full_path[i + 1][0] - full_path[i][0]) < 0) plus_X = -plus_X;
         }
+        ctx.moveTo(full_path[i][0] * imageWidth / 100, full_path[i][1] * imageHeigth / 100);
         ctx.lineTo(full_path[i + 1][0] * imageWidth / 100 + plus_X, full_path[i + 1][1] * imageHeigth / 100 + plus_Y);
     }
     ctx.lineWidth = 5;

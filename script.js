@@ -227,9 +227,38 @@ class Elevator_Stairs {
 
 
 $(function() {
+    if (getCookieSupport()) {
+        if (document.cookie.indexOf("visited") >= 0) {
+            // no instructions needed
+        } else {
+            alert(strings["instructions_beginning"][language_index]);
+            document.cookie = "visited";
+        }
+    }
     showLoader();
     storeRoomsOfBuilding();
 });
+
+// @source: https://stackoverflow.com/questions/2167310/how-to-show-a-message-only-if-cookies-are-disabled-in-browser/2167462#2167462
+// Find out what cookies are supported. Returns:
+// null - no cookies
+// false - only session cookies are allowed
+// true - session cookies and persistent cookies are allowed
+// (though the persistent cookies might not actually be persistent, if the user has set
+// them to expire on browser exit)
+//
+function getCookieSupport() {
+    var persist = true;
+    do {
+        var c = 'gCStest=' + Math.floor(Math.random() * 100000000);
+        document.cookie = persist ? c + ';expires=Tue, 01-Jan-2030 00:00:00 GMT' : c;
+        if (document.cookie.indexOf(c) !== -1) {
+            document.cookie = c + ';expires=Sat, 01-Jan-2000 00:00:00 GMT';
+            return persist;
+        }
+    } while (!(persist = !persist));
+    return null;
+}
 
 function showLoader() {
     document.getElementById("loader").style.display = "block";

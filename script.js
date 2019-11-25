@@ -379,6 +379,7 @@ function displaySection(section_index) {
         case 0:
             // options for location
             $("#from_room_options").css("display", "block")
+            $(".footer").css("display", "none")
             break;
         case 1:
             // options for destination

@@ -100,6 +100,11 @@ body {
     font-size: 40px;
 }
 
+.super_large_text {
+    text-align: center;
+    font-size: 60px;
+}
+
 img {
     position: relative;
 }
@@ -265,4 +270,46 @@ div.scrollmenu table {
 
 div.scrollmenu table:hover {
     background-color: #777;
+}
+
+.rcorners {
+    margin: 5%;
+    border-radius: 25px;
+    background: darkgreen;
+    color: white;
+    font-size: 3em;
+    padding: 20px;
+    width: 90%;
+    height: 15%;
+    display: -webkit-flex;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.button_room_select {
+    margin-left: 20%;
+    margin-right: 20%;
+    margin-top: 5%;
+    margin-bottom: 5%;
+    border-radius: 25px;
+    background: darkgreen;
+    color: white;
+    font-size: 2.5em;
+    padding: 20px;
+    width: 60%;
+    height: 8%;
+    display: -webkit-flex;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.icon_option_room {
+    height: 60%;
+    margin-right: 5%;
+}
+
+.text_of_option {
+    width: 70%;
 }

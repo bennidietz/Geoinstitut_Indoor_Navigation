@@ -37,47 +37,84 @@
     </div>
     <div id="loader" style="display: none;"></div>
     <div id="main_section">
+        <div id="from_room_options">
+            <p id="value_label_location" class="super_large_text" style="margin: 10%;">
+            </p>
+
+            <span class="rcorners" onclick="displaySection(2)">
+                <img class="icon_option_room" src="symbols/qr_code.png">
+                <span id="option1_fromroom" class="text_of_option">
+                </span>
+            </span>
+            <p class="rcorners" onclick="displaySection(3)">
+                <img class="icon_option_room" src="symbols/floor_plan.png">
+                <span id="option2_fromroom" class="text_of_option">
+                </span>
+            </p>
+            <p class="rcorners" onclick="displaySection(4)">
+                <img class="icon_option_room" src="symbols/list.png">
+                <span id="option3_fromroom" class="text_of_option">
+                </span>
+            </p>
+        </div>
+        <div id="to_room_options">
+            <p id="value_label_destination" class="super_large_text" style="margin: 10%;">
+            </p>
+
+            <span class="rcorners" onclick="displaySection(3)">
+                    <img class="icon_option_room" src="symbols/floor_plan.png">
+                    <span id="option1_toroom" class="text_of_option">
+                    </span>
+            </span>
+            <p class="rcorners" onclick="displaySection(4)">
+                <img class="icon_option_room" src="symbols/list.png">
+                <span id="option2_toroom" class="text_of_option">
+                    </span>
+            </p>
+        </div>
         <div class="autocomplete" style="width:100%; font-size: 3em; padding: 20px;">
             <input id="autocomplete_search" type="text" name="myCountry">
         </div>
 
-        <div class="modal-body row">
-            <div class="col-md-6">
-                <!-- Your first column here -->
-                <canvas style="display: block;margin-left: auto;margin-right: auto;" id="canvas"></canvas>
-                <table border="0" width="100%" id="table2" style="margin: 5px;">
-                    <tr>
-                        <td>
-                            <btn id="etagen_btn1" class="btn btn-default etagen_btn"></btn>
-                        </td>
-                        <td>
-                            <btn id="etagen_btn2" class="btn btn-default etagen_btn"></btn>
-                        </td>
-                        <td>
-                            <btn id="etagen_btn3" class="btn btn-default etagen_btn"></btn>
-                        </td>
-                        <td>
-                            <btn id="etagen_btn4" class="btn btn-default etagen_btn"></btn>
-                        </td>
-                        <td>
-                            <btn id="etagen_btn5" class="btn btn-default etagen_btn"></btn>
-                        </td>
-                        <td>
-                            <btn id="etagen_btn6" class="btn btn-default etagen_btn"></btn>
-                        </td>
-                        <td>
-                            <btn id="etagen_btn7" class="btn btn-default etagen_btn"></btn>
-                        </td>
-                    </tr>
-                </table>
-            </div>
-            <div id="room_details" style="display: none; margin: 20px; padding:20px;background: chartreuse; font-size: 2.5em;">
+        <div id="floor_plan_section">
+            <div class="modal-body row">
+                <div class="col-md-6">
+                    <!-- Your first column here -->
+                    <canvas style="display: block;margin-left: auto;margin-right: auto;" id="canvas"></canvas>
+                    <table border="0" width="100%" id="table2" style="margin: 5px;">
+                        <tr>
+                            <td>
+                                <btn id="etagen_btn1" class="btn btn-default etagen_btn"></btn>
+                            </td>
+                            <td>
+                                <btn id="etagen_btn2" class="btn btn-default etagen_btn"></btn>
+                            </td>
+                            <td>
+                                <btn id="etagen_btn3" class="btn btn-default etagen_btn"></btn>
+                            </td>
+                            <td>
+                                <btn id="etagen_btn4" class="btn btn-default etagen_btn"></btn>
+                            </td>
+                            <td>
+                                <btn id="etagen_btn5" class="btn btn-default etagen_btn"></btn>
+                            </td>
+                            <td>
+                                <btn id="etagen_btn6" class="btn btn-default etagen_btn"></btn>
+                            </td>
+                            <td>
+                                <btn id="etagen_btn7" class="btn btn-default etagen_btn"></btn>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+                <div id="room_details" style="display: none; margin: 20px;">
 
-            </div>
-            <div id="info"></div>
-            <div style="text-align: center;" class="col-md-6">
-                <!-- Your second column here -->
-                <div class="scrollmenu">
+                </div>
+                <div id="info"></div>
+                <div style="text-align: center;" class="col-md-6">
+                    <!-- Your second column here -->
+                    <div class="scrollmenu">
+                    </div>
                 </div>
             </div>
         </div>

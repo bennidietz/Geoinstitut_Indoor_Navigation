@@ -276,6 +276,15 @@ function onRoomsLoaded() {
     to_room_object = rooms_order_after_roomnr[to_room];
 
     document.title = strings["title_application"][language_index];
+
+    $("#value_label_location").text(strings["destermine_my_position"][language_index] + ":");
+    $("#value_label_location").text(strings["destermine_my_position"][language_index] + ":");
+    $("#option1_fromroom").text(strings["scan_qr_code_from_room"][language_index]);
+    $("#option2_fromroom").text(strings["select_room_on_floorplan"][language_index]);
+    $("#option3_fromroom").text(strings["search_list_of_rooms"][language_index]);
+    $("#value_label_destination").text(strings["destermine_my_destination"][language_index] + ":");
+    $("#option1_toroom").text(strings["select_room_on_floorplan"][language_index]);
+    $("#option2_toroom").text(strings["search_list_of_rooms"][language_index]);
     $("#label_cancel").text(strings["cancel"][language_index])
     $("#label_next_step").text(strings["next_step"][language_index])
     $("#etagen_btn1").text(strings["floor_1"][language_index])
@@ -294,14 +303,17 @@ function onRoomsLoaded() {
         $("#value_level").text($("#etagen_btn" + Number(from_room_object.level)).text())
         $("#etagen_btn" + Number(from_room_object.level)).removeClass("btn-default").addClass("btn-danger");
         if (!to_room_object) {
+            displaySection(1)
             setImageWithoutRoute(from_room_object.level, null);
             $("#next_step").remove();
             $("#label_cancel").text(strings["reset_position"][language_index])
         } else {
-            // TODO: set image with route
+            displaySection(3)
+                // TODO: set image with route
             calculateRoute(from_room_object, to_room_object);
         }
     } else {
+        displaySection(0)
         setImageWithoutRoute(2, null);
         etagen_nummer = 2;
         if (!to_room_object) {
@@ -348,6 +360,42 @@ function onRoomsLoaded() {
     }
     $("#myHeader").css("width", window.innerWidth + 30);
     showMainSection();
+}
+
+// 0: options for location; 1: options for destination; 2: qr code scanner; 3: floor plan; 4: list of rooms
+function displaySection(section_index) {
+    $("#from_room_options, #to_room_options, #floor_plan_section, .autocomplete").css("display", "none")
+    $(".footer").css("display", "block")
+    switch (section_index) {
+        case 0:
+            // options for location
+            $("#from_room_options").css("display", "block")
+            break;
+        case 1:
+            // options for destination
+            $("#to_room_options").css("display", "block")
+            break;
+        case 2:
+            // qr code scanner
+            //$("#from_room_options").css("display", "block")
+            break;
+        case 3:
+            // floor plan
+            if (!from_room_object || !to_room_object) {
+                $(".footer").css("display", "none")
+            }
+            $("#floor_plan_section").css("display", "block")
+            break;
+        case 4:
+            // list of rooms
+            if (!from_room_object || !to_room_object) {
+                $(".footer").css("display", "none")
+            }
+            $(".autocomplete").css("display", "block")
+            break;
+        default:
+            break;
+    }
 }
 
 function calculateRoute(roomA, roomB) {
@@ -1028,11 +1076,11 @@ canvas.addEventListener('click', function(e) {
                 }
             } else {
                 if (from_room_object) {
-                    $("#room_details").html("<b>" + strings["room_nr"][language_index] + ":</b> " + String(room_obj.room_nr) + "<span style='padding-left:25px'><btn class='btn btn-primary' onclick='setToRoomCurrentlySelected()' style='font-size:0.8em'>=> " + strings["navigate_to_room"][language_index] + "</btn></span><br>" +
-                        "<b>" + strings["institute"][language_index] + ": </b>" + room_obj.institute["name"] + "")
+                    var html = "<btn class='button_room_select' onclick='setToRoomCurrentlySelected()'>=> " + strings["navigate_to_room"][language_index] + "</btn>" + "<b>";
+                    $("#room_details").html(html + "<div style='padding:20px;background: orange; font-size: 2.5em;'>" + "</b><b>" + strings["room_nr"][language_index] + ":</b> " + String(room_obj.room_nr) + '<br><b>' + strings["institute"][language_index] + ": </b>" + room_obj.institute["name"] + "</div>");
                 } else {
-                    $("#room_details").html("<b>" + strings["room_nr"][language_index] + ":</b> " + String(room_obj.room_nr) + "<span style='padding-left:25px'><btn class='btn btn-primary' onclick='setFromRoomCurrentlySelected()' style='font-size:0.8em'>=> " + strings["start_from_here"][language_index] + "</btn></span><br>" +
-                        "<b>" + strings["institute"][language_index] + ": </b>" + room_obj.institute["name"] + "")
+                    var html = "<btn class='button_room_select' onclick='setFromRoomCurrentlySelected()'>=> " + strings["start_from_here"][language_index] + "</btn>" + "<b>";
+                    $("#room_details").html(html + "<div style='padding:20px;background: orange; font-size: 2.5em;'>" + "</b><b>" + strings["room_nr"][language_index] + ":</b> " + String(room_obj.room_nr) + '<br><b>' + strings["institute"][language_index] + ": </b>" + room_obj.institute["name"] + "</div>");
                 }
             }
         }
@@ -1175,12 +1223,17 @@ function autocomplete(inp, arr) {
                     /*close the list of autocompleted values,
                     (or any other open lists of autocompleted values:*/
                     closeAllLists();
-                    setToRoom(inp.value.substr(0, inp.value.indexOf("-")).replace(" ", ""));
+                    if (from_room_object) {
+                        setToRoom(inp.value.substr(0, inp.value.indexOf("-")).replace(" ", ""));
+                    } else {
+                        setFromRoom(inp.value.substr(0, inp.value.indexOf("-")).replace(" ", ""));
+                    }
                 });
                 a.appendChild(b);
             }
         }
     });
+
     /*execute a function presses a key on the keyboard:*/
     inp.addEventListener("keydown", function(e) {
         var x = document.getElementById(this.id + "autocomplete-list");

@@ -362,10 +362,19 @@ function onRoomsLoaded() {
     showMainSection();
 }
 
+function backButtonPressed() {
+    if (from_room_object) {
+        displaySection(1);
+    } else {
+        displaySection(0);
+    }
+}
+
 // 0: options for location; 1: options for destination; 2: qr code scanner; 3: floor plan; 4: list of rooms
 function displaySection(section_index) {
     $("#from_room_options, #to_room_options, #floor_plan_section, .autocomplete").css("display", "none")
     $(".footer").css("display", "block")
+    $("#back_button").css("display", "none")
     switch (section_index) {
         case 0:
             // options for location
@@ -377,12 +386,14 @@ function displaySection(section_index) {
             break;
         case 2:
             // qr code scanner
-            //$("#from_room_options").css("display", "block")
+            $("#back_button").css("display", "block")
+                //$("#from_room_options").css("display", "block")
             break;
         case 3:
             // floor plan
             if (!from_room_object || !to_room_object) {
                 $(".footer").css("display", "none")
+                $("#back_button").css("display", "block")
             }
             $("#floor_plan_section").css("display", "block")
             break;
@@ -390,6 +401,7 @@ function displaySection(section_index) {
             // list of rooms
             if (!from_room_object || !to_room_object) {
                 $(".footer").css("display", "none")
+                $("#back_button").css("display", "block")
             }
             $(".autocomplete").css("display", "block")
             break;

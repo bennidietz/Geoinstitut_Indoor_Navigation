@@ -231,7 +231,7 @@ $(function() {
         if (document.cookie.indexOf("visited") >= 0) {
             // no instructions needed
         } else {
-            alert(strings["instructions_beginning"][language_index]);
+            //alert(strings["instructions_beginning"][language_index]);
             document.cookie = "visited";
         }
     }
@@ -687,8 +687,8 @@ function getRelativeDirectionOfDecisionPoint(pointA, pointB, pointC, from_qr_cod
 // returns:
 // top: 1; right: 2; bottom: -1; left: -2
 function getDirectionOfRoute(from_point, to_point) {
-    var x = to_point[0] - from_point[0]
-    var y = to_point[1] - from_point[1]
+    var x = roundWithTwoDecimals(to_point[0]) - roundWithTwoDecimals(from_point[0])
+    var y = roundWithTwoDecimals(to_point[1]) - roundWithTwoDecimals(from_point[1])
     if (x != 0) {
         if (x > 0) {
             return 2;

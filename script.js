@@ -409,6 +409,7 @@ function displaySection(section_index) {
     $("#from_room_options, #to_room_options, #floor_plan_section, .autocomplete").css("display", "none")
     $(".footer").css("display", "block")
     $("#back_button").css("display", "none")
+    $("#preview").css("display", "none");
     switch (section_index) {
         case 0:
             // options for location
@@ -422,7 +423,23 @@ function displaySection(section_index) {
         case 2:
             // qr code scanner
             $("#back_button").css("display", "block")
-                //$("#from_room_options").css("display", "block")
+            $("#preview").css("display", "block");
+            let scanner = new Instascan.Scanner({ video: document.getElementById('preview') });
+            scanner.addListener('scan', function(content) {
+                console.log(content);
+                alert(content)
+            });
+            Instascan.Camera.getCameras().then(function(cameras) {
+                if (cameras.length > 0) {
+                    scanner.start(cameras[0]);
+                } else {
+                    console.error('No cameras found.');
+                }
+            }).catch(function(e) {
+                console.error(e);
+            });
+
+            //$("#from_room_options").css("display", "block")
             break;
         case 3:
             // floor plan

@@ -430,6 +430,8 @@ function displaySection(section_index) {
                 alert(content)
             });
             Instascan.Camera.getCameras().then(function(cameras) {
+                console.log(cameras)
+                alert(cameras)
                 if (cameras.length > 0) {
                     scanner.start(cameras[0]);
                 } else {

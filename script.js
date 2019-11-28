@@ -367,7 +367,8 @@ function onRoomsLoaded() {
         for (var i in rooms_order_after_roomnr) {
             autocomplete_options.push(i + " - " + rooms_order_after_roomnr[i]["institute"]["name"])
         }
-        autocomplete(document.getElementById("autocomplete_search"), autocomplete_options);
+        autocomplete(document.getElementById("autocomplete_search"), autocomplete_options, "autocomplete_search");
+        $("#autocomplete_search").trigger("change")
     }
     if (!mapfullwidth) {
         $(".cancel_table_field, .next_step_table_field, .cancel_table_field, header").css("padding-bottom", "3%")
@@ -438,6 +439,14 @@ function displaySection(section_index) {
                 $("#back_button").css("display", "block")
             }
             $(".autocomplete").css("display", "block")
+            $("#autocomplete_search").trigger("change")
+            setTimeout(function() {
+                var event = new Event('input', {
+                    bubbles: true,
+                    cancelable: true,
+                });
+                document.getElementById("autocomplete_search").dispatchEvent(event);
+            }, 200);
             break;
         default:
             break;
@@ -469,8 +478,13 @@ function calculateRoute(roomA, roomB) {
         instructions = getInstructionsOfRoutes(shortest_nav_path1)
     }
     for (var k in instructions) {
-        if (instructions[k].distance) {
-            $(".scrollmenu").append('<table class="arrow_table"><thead><tr><th colspan="1" align="center"><img style="opacity:0.5" class="center arrow_images" src="' + getArrowFileURLFromRouteInstruction(instructions[k]) + '"></th></tr><tr><th colspan="1" class="large_text distances" style="opacity:0.5">' + instructions[k].distance + ' m</th></tr></thead></table>');
+        console.log(instructions[k].distance)
+        if (instructions[k].distance != null) {
+            if (instructions[k].distance == 0) {
+                $(".scrollmenu").append('<table class="arrow_table"><thead><tr><th colspan="1" align="center"><img style="opacity:0.5" class="center arrow_images" src="' + getArrowFileURLFromRouteInstruction(instructions[k]) + '"></th></tr><tr><th colspan="1" class="large_text distances" style="opacity:0.5">< 1 m</th></tr></thead></table>');
+            } else {
+                $(".scrollmenu").append('<table class="arrow_table"><thead><tr><th colspan="1" align="center"><img style="opacity:0.5" class="center arrow_images" src="' + getArrowFileURLFromRouteInstruction(instructions[k]) + '"></th></tr><tr><th colspan="1" class="large_text distances" style="opacity:0.5">' + instructions[k].distance + ' m</th></tr></thead></table>');
+            }
         } else {
             $(".scrollmenu").append('<table class="arrow_table"><thead><tr><th colspan="1" align="center"><img style="opacity:0.3" class="center arrow_images" src="symbols/stairs.png"></th></tr><tr><th colspan="1" class="large_text distances" style="opacity:0.5">' + $("#etagen_btn" + Number(to_room_object.level)).text() + '</th></tr></thead></table>');
         }
@@ -1261,7 +1275,7 @@ function setFromRoom(from_room_number) {
 }
 
 
-function autocomplete(inp, arr) {
+function autocomplete(inp, arr, id) {
     /* source: https://www.w3schools.com/howto/howto_js_autocomplete.asp
     the autocomplete function takes two arguments,
     the text field element and an array of possible autocompleted values:*/
@@ -1271,7 +1285,7 @@ function autocomplete(inp, arr) {
         var a, b, i, val = this.value;
         /*close any already open lists of autocompleted values*/
         closeAllLists();
-        if (!val) { return false; }
+        if (!val) { return instantAutocomplete(); }
         currentFocus = -1;
         /*create a DIV element that will contain the items (values):*/
         a = document.createElement("DIV");
@@ -1279,7 +1293,8 @@ function autocomplete(inp, arr) {
         a.setAttribute("class", "autocomplete-items");
         /*append the DIV element as a child of the autocomplete container:*/
         this.parentNode.appendChild(a);
-        /*for each item in the array...*/
+        console.log(this.parentNode)
+            /*for each item in the array...*/
         for (i = 0; i < arr.length; i++) {
             /*check if the item starts with the same letters as the text field value:*/
             //here
@@ -1294,20 +1309,66 @@ function autocomplete(inp, arr) {
                 /*execute a function when someone clicks on the item value (DIV element):*/
                 b.addEventListener("click", function(e) {
                     /*insert the value for the autocomplete text field:*/
+                    console.log(this)
                     inp.value = this.getElementsByTagName("input")[0].value;
                     /*close the list of autocompleted values,
                     (or any other open lists of autocompleted values:*/
+                    console.log(inp.value)
                     closeAllLists();
                     if (from_room_object) {
-                        setToRoom(inp.value.substr(0, inp.value.indexOf("-")).replace(" ", ""));
+                        //setToRoom(inp.value.substr(0, inp.value.indexOf("-")).replace(" ", ""));
                     } else {
-                        setFromRoom(inp.value.substr(0, inp.value.indexOf("-")).replace(" ", ""));
+                        //setFromRoom(inp.value.substr(0, inp.value.indexOf("-")).replace(" ", ""));
                     }
                 });
+                console.log(a)
                 a.appendChild(b);
             }
         }
     });
+
+    function instantAutocomplete() {
+        var a, b, i, val = inp.value;
+        console.log(a, b, i, val)
+            /*close any already open lists of autocompleted values*/
+        closeAllLists();
+        //if (!val) { return false; }
+        currentFocus = -1;
+        /*create a DIV element that will contain the items (values):*/
+        a = document.createElement("DIV");
+        a.setAttribute("id", inp.id + "autocomplete-list");
+        a.setAttribute("class", "autocomplete-items");
+        /*append the DIV element as a child of the autocomplete container:*/
+        inp.parentNode.appendChild(a);
+        console.log(inp.parentNode)
+            /*for each item in the array...*/
+        for (i = 0; i < arr.length; i++) {
+            /*check if the item starts with the same letters as the text field value:*/
+            //here
+            /*create a DIV element for each matching element:*/
+            b = document.createElement("DIV");
+            /*make the matching letters bold:*/
+            b.innerHTML = "<strong>" + arr[i].substr(0, val.length) + "</strong>";
+            b.innerHTML += arr[i].substr(val.length);
+            /*insert a input field that will hold the current array item's value:*/
+            b.innerHTML += "<input type='hidden' value='" + arr[i] + "'>";
+            /*execute a function when someone clicks on the item value (DIV element):*/
+            b.addEventListener("click", function(e) {
+                /*insert the value for the autocomplete text field:*/
+                inp.value = this.getElementsByTagName("input")[0].value;
+                /*close the list of autocompleted values,
+                (or any other open lists of autocompleted values:*/
+                closeAllLists();
+                if (from_room_object) {
+                    setToRoom(inp.value.substr(0, inp.value.indexOf("-")).replace(" ", ""));
+                } else {
+                    setFromRoom(inp.value.substr(0, inp.value.indexOf("-")).replace(" ", ""));
+                }
+            });
+            console.log(a)
+            a.appendChild(b);
+        }
+    }
 
     /*execute a function presses a key on the keyboard:*/
     inp.addEventListener("keydown", function(e) {

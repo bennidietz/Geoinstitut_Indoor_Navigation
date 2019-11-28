@@ -433,7 +433,11 @@ function displaySection(section_index) {
                 console.log(cameras)
                 alert(cameras)
                 if (cameras.length > 0) {
-                    scanner.start(cameras[0]);
+                    if (cameras.length > 1) {
+                        scanner.start(cameras[1]);
+                    } else {
+                        scanner.start(cameras[0]);
+                    }
                 } else {
                     console.error('No cameras found.');
                 }

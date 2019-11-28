@@ -426,14 +426,13 @@ function displaySection(section_index) {
             $("#preview").css("display", "block");
             let scanner = new Instascan.Scanner({ video: document.getElementById('preview') });
             scanner.addListener('scan', function(content) {
-                console.log(content);
-                alert(content)
+                window.location = content;
             });
             Instascan.Camera.getCameras().then(function(cameras) {
-                console.log(cameras)
-                alert(cameras)
+                console.log(JSON.stringify(cameras))
                 if (cameras.length > 0) {
                     if (cameras.length > 1) {
+                        alert("zwei")
                         scanner.start(cameras[1]);
                     } else {
                         scanner.start(cameras[0]);

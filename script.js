@@ -606,6 +606,10 @@ function getShortestPathBetweenPointsOnPathsForDifferentLevels(roomA, roomB) {
         if (strais_elevators[i]["category"] == 3) break; // ignore toilettes
         var detailsPathC_levelA = getDetailsOfNearestPath(strais_elevators[i].door_coordinates, pathsLevelA);
         var detailsPathC_levelB = getDetailsOfNearestPath(strais_elevators[i].door_coordinates, pathsLevelB);
+        if (distanceBetweenTwoPoints(strais_elevators[i].door_coordinates, detailsPathC_levelB["point"]) > 10) {
+            // stairs or elevator finds no shortest path
+            break;
+        }
         var all_possible_pathsA = getAllPossiblePaths(getConectionArrayPaths(pathsLevelA), [
             [Number(detailsPathA["path_index"])]
         ], Number(detailsPathC_levelA["path_index"]));
@@ -1179,11 +1183,11 @@ canvas.addEventListener('click', function(e) {
             currently_selected_room = room_obj;
             if (room_obj.room_nr.length == 0 && room_obj.description.length > 0) {
                 if (from_room_object) {
-                    $("#room_details").html("<b>" + strings[description.length][language_index] + ":</b> " + String(room_obj.room_nr) + "<span style='padding-left:25px'><btn class='btn btn-primary' onclick='setToRoomCurrentlySelected()' style='font-size:0.8em'>=> " + strings["navigate_to_room"][language_index] + "</btn></span><br>" +
-                        "<b>" + strings["institute"][language_index] + ": </b>" + room_obj.institute["name"] + "")
+                    var html = "<btn class='button_room_select' onclick='setToRoomCurrentlySelected()'>=> " + strings["navigate_to_room"][language_index] + "</btn>" + "<b>";
+                    $("#room_details").html(html);
                 } else {
-                    $("#room_details").html("<b>" + strings["room_nr"][language_index] + ":</b> " + String(room_obj.room_nr) + "<span style='padding-left:25px'><btn class='btn btn-primary' onclick='setFromRoomCurrentlySelected()' style='font-size:0.8em'>=> " + strings["start_from_here"][language_index] + "</btn></span><br>" +
-                        "<b>" + strings["institute"][language_index] + ": </b>" + room_obj.institute["name"] + "")
+                    var html = "<btn class='button_room_select' onclick='setFromRoomCurrentlySelected()'>=> " + strings["start_from_here"][language_index] + "</btn>" + "<b>";
+                    $("#room_details").html(html);
                 }
             } else {
                 if (from_room_object) {
@@ -1198,9 +1202,14 @@ canvas.addEventListener('click', function(e) {
     }
     for (var i in strais_elevators) {
         if (pointIsWithinSpatialExtend([mouseX, mouseY], strais_elevators[i].spatial_extend)) {
-            setImageWithoutRoute(etagen_nummer, strais_elevators[i]);
             $("#room_details").css("display", "block");
-            $("#room_details").html("<b>" + strais_elevators[i].category_name + "</b>");
+            $("#info").html("");
+            setImageWithoutRoute(etagen_nummer, strais_elevators[i]);
+            if (from_room_object) {
+                $("#room_details").html("<div style='padding:20px;background: orange; font-size: 2.5em;'>" + "</b><b>" + strings["category"][language_index] + ":</b> " + strais_elevators[i].category_name + '<br><b>' + strings["institute"][language_index] + ": </b>" + room_obj.institute["name"] + "</div>");
+            } else {
+                $("#room_details").html("<div style='padding:20px;background: orange; font-size: 2.5em;'>" + "</b><b>" + strings["category"][language_index] + ":</b> " + strais_elevators[i].category_name + '<br><b>' + strings["institute"][language_index] + ": </b>" + room_obj.institute["name"] + "</div>");
+            }
         }
     }
 });
@@ -1338,9 +1347,9 @@ function autocomplete(inp, arr, id) {
                     console.log(inp.value)
                     closeAllLists();
                     if (from_room_object) {
-                        //setToRoom(inp.value.substr(0, inp.value.indexOf("-")).replace(" ", ""));
+                        setToRoom(inp.value.substr(0, inp.value.indexOf("-")).replace(" ", ""));
                     } else {
-                        //setFromRoom(inp.value.substr(0, inp.value.indexOf("-")).replace(" ", ""));
+                        setFromRoom(inp.value.substr(0, inp.value.indexOf("-")).replace(" ", ""));
                     }
                 });
                 console.log(a)

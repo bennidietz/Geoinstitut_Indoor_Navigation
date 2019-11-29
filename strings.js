@@ -14,6 +14,7 @@ const strings = {
     "destination_reached": ["Sie haben Ihr Ziel erreicht", "You reached your destination", ""],
     "destination_is_at": ["Das Ziel befindet sich ", "The destination is "],
     "at_top": [],
+    "category": ["Kategorie", "Category", ""],
     "destermine_my_position": ["Meinen Standort bestimmen", "Determine my location", ""],
     "destermine_my_destination": ["Meinen Zielraum bestimmen", "Determine my destination", ""],
     "scan_qr_code_from_room": ["QR-Code von Raum scannen", "Scan QR-Code from room", ""],

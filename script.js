@@ -594,9 +594,9 @@ function getInstructionsOfRoutesDifferentLevels(routes1, routes2) {
 
 function getShortestPathBetweenPointsOnPaths(pointA, pathA_index, pointB, pathB_index, path_array, roomA, roomB) {
     var path_connections = getConectionArrayPaths(path_array);
-    var all_possible_paths = getAllPossiblePaths(path_connections, [
+    var all_possible_paths = getAllPossiblePathsWithoutStarisPathsInMiddle(path_connections, [
         [Number(pathA_index)]
-    ], Number(pathB_index));
+    ], Number(pathB_index), from_room_object.level);
     return getShortestPath(path_array, all_possible_paths, pointA, pointB, roomA, roomB);
 }
 
@@ -616,12 +616,12 @@ function getShortestPathBetweenPointsOnPathsForDifferentLevels(roomA, roomB) {
             // stairs or elevator finds no shortest path
             continue;
         }
-        var all_possible_pathsA = getAllPossiblePaths(getConectionArrayPaths(pathsLevelA), [
+        var all_possible_pathsA = getAllPossiblePathsWithoutStarisPathsInMiddle(getConectionArrayPaths(pathsLevelA), [
             [Number(detailsPathA["path_index"])]
-        ], Number(detailsPathC_levelA["path_index"]));
-        var all_possible_pathsB = getAllPossiblePaths(getConectionArrayPaths(pathsLevelB), [
+        ], Number(detailsPathC_levelA["path_index"]), from_room_object.level);
+        var all_possible_pathsB = getAllPossiblePathsWithoutStarisPathsInMiddle(getConectionArrayPaths(pathsLevelB), [
             [Number(detailsPathC_levelB["path_index"])]
-        ], Number(detailsPathB["path_index"]));
+        ], Number(detailsPathB["path_index"]), to_room_object.level);
         var spath = getShortestPathDifferentLevels(detailsPathA, detailsPathB, all_possible_pathsA, all_possible_pathsB, strais_elevators[i], roomA, roomB, detailsPathC_levelA);
         var tmp_distance = 0;
         for (var k in spath[0]) {
@@ -775,6 +775,34 @@ function getDirectionOfRoute(from_point, to_point) {
             return 1;
         }
     }
+}
+
+function getAllPossiblePathsWithoutStarisPathsInMiddle(connections, path_lines, destiny_path_index, level) {
+    var ignore_path_with = Number(pathsIsOnlyForElevator(level)["path_index"])
+    console.log(ignore_path_with)
+    var poss_paths = getAllPossiblePaths(connections, path_lines, destiny_path_index);
+    var delete_paths = []
+    var output = []
+    for (var i in poss_paths) {
+        for (var j = 1; j < poss_paths[i].length - 1; j++) {
+            console.log(poss_paths[i])
+            console.log(j)
+            console.log(poss_paths[i][j])
+            if (poss_paths[i][j] == ignore_path_with) {
+                delete_paths.push(i);
+            }
+        }
+    }
+    for (var k in poss_paths) {
+        if (delete_paths.indexOf(k) == -1) {
+            output.push(poss_paths[k])
+        }
+    }
+    if (output.length == 0) {
+        console.log(poss_paths)
+    }
+    console.log(output)
+    return output;
 }
 
 function getAllPossiblePaths(connections, path_lines, destiny_path_index) {
@@ -931,6 +959,16 @@ function displayFullNavigation(level, shortest_path, second_paths) {
         displayRouteBetweenPoints(ctx, shortest_path, canvas.width, canvas.height);
     };
     img.src = getImageURLForLevel(level);
+}
+
+function pathsIsOnlyForElevator(level) {
+    var output = null;
+    for (var i in strais_elevators) {
+        if (getDetailsOfNearestPath(strais_elevators[i].door_coordinates, paths[level])["distance"] == 0) {
+            output = getDetailsOfNearestPath(strais_elevators[i].door_coordinates, paths[level]);
+        }
+    }
+    return output;
 }
 
 function stairsWithDirectPathChosen() {

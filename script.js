@@ -550,6 +550,10 @@ function getArrowFileURLFromRouteInstruction(route_instruction) {
             //right
             file += "arrow_right";
             break;
+        case 2:
+            //up
+            file += "arrow_up";
+            break;
         default:
             break;
     }
@@ -577,12 +581,14 @@ function getInstructionsOfRoutesDifferentLevels(routes1, routes2) {
         instructions.push(new RouteInstruction(dir, distance, routes1[i + 1].endPoint, routes1[i].from_qr_code))
     }
     instructions.push(new RouteInstruction(null, null, null, null));
+    if (stairsWithDirectPathChosen()) {
+        instructions.push(new RouteInstruction(2, routes2[0].distance, routes2[0].endPoint, false))
+    }
     for (var i = 0; i < routes2.length - 2; i++) {
         var dir = getRelativeDirectionOfDecisionPoint(routes2[i].startPoint, routes2[i].endPoint, routes2[i + 1].endPoint, routes2[i].from_qr_code);
         var distance = routes2[i + 1].distance
         instructions.push(new RouteInstruction(dir, distance, routes2[i + 1].endPoint, routes2[i].from_qr_code))
     }
-    console.log(instructions)
     return instructions;
 }
 
@@ -625,7 +631,6 @@ function getShortestPathBetweenPointsOnPathsForDifferentLevels(roomA, roomB) {
             tmp_distance += spath[1][o].distance;
         }
         if (tmp_distance < min_distance) {
-            console.log(strais_elevators[i])
             used_stairs_elevator = strais_elevators[i];
             min_distance = tmp_distance;
             min_paths = spath;
@@ -883,8 +888,6 @@ function displayFullNavigation(level, shortest_path, second_paths) {
     if (!mapfullwidth) screen_width = window.innerWidth * scale_desktop_version_canvas; // Desktop Version
     canvas.width = screen_width;
     canvas.height = screen_width;
-    console.log(shortest_path)
-    console.log(current_step)
     var img = new Image();
     img.onload = function() {
         ctx.drawImage(img, 0, 0, img.width, img.height, 0, 0, screen_width, screen_width);
@@ -930,14 +933,17 @@ function displayFullNavigation(level, shortest_path, second_paths) {
     img.src = getImageURLForLevel(level);
 }
 
+function stairsWithDirectPathChosen() {
+    return (getDetailsOfNearestPath(used_stairs_elevator.door_coordinates, paths[to_room_object.level])["distance"] == 0);
+}
+
 function nextStepClicked() {
-    if (current_step == 0) {
-        current_step += 2;
-    } else {
+    if (current_step != 0 || (second_route && stairsWithDirectPathChosen())) {
         current_step++;
+    } else {
+        current_step += 2;
     }
     current_instruction++;
-    console.log(instructions[current_instruction])
     if (shortest_nav_path2) {
         if (second_route) {
             if (current_step == shortest_nav_path2.length) {
@@ -1327,8 +1333,7 @@ function autocomplete(inp, arr, id) {
         a.setAttribute("class", "autocomplete-items");
         /*append the DIV element as a child of the autocomplete container:*/
         this.parentNode.appendChild(a);
-        console.log(this.parentNode)
-            /*for each item in the array...*/
+        /*for each item in the array...*/
         for (i = 0; i < arr.length; i++) {
             /*check if the item starts with the same letters as the text field value:*/
             //here
@@ -1343,11 +1348,9 @@ function autocomplete(inp, arr, id) {
                 /*execute a function when someone clicks on the item value (DIV element):*/
                 b.addEventListener("click", function(e) {
                     /*insert the value for the autocomplete text field:*/
-                    console.log(this)
                     inp.value = this.getElementsByTagName("input")[0].value;
                     /*close the list of autocompleted values,
                     (or any other open lists of autocompleted values:*/
-                    console.log(inp.value)
                     closeAllLists();
                     if (from_room_object) {
                         setToRoom(inp.value.substr(0, inp.value.indexOf("-")).replace(" ", ""));
@@ -1355,7 +1358,6 @@ function autocomplete(inp, arr, id) {
                         setFromRoom(inp.value.substr(0, inp.value.indexOf("-")).replace(" ", ""));
                     }
                 });
-                console.log(a)
                 a.appendChild(b);
             }
         }
@@ -1363,8 +1365,7 @@ function autocomplete(inp, arr, id) {
 
     function instantAutocomplete() {
         var a, b, i, val = inp.value;
-        console.log(a, b, i, val)
-            /*close any already open lists of autocompleted values*/
+        /*close any already open lists of autocompleted values*/
         closeAllLists();
         //if (!val) { return false; }
         currentFocus = -1;
@@ -1374,8 +1375,7 @@ function autocomplete(inp, arr, id) {
         a.setAttribute("class", "autocomplete-items");
         /*append the DIV element as a child of the autocomplete container:*/
         inp.parentNode.appendChild(a);
-        console.log(inp.parentNode)
-            /*for each item in the array...*/
+        /*for each item in the array...*/
         for (i = 0; i < arr.length; i++) {
             /*check if the item starts with the same letters as the text field value:*/
             //here
@@ -1399,7 +1399,6 @@ function autocomplete(inp, arr, id) {
                     setFromRoom(inp.value.substr(0, inp.value.indexOf("-")).replace(" ", ""));
                 }
             });
-            console.log(a)
             a.appendChild(b);
         }
     }

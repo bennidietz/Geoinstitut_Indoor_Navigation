@@ -603,12 +603,12 @@ function getShortestPathBetweenPointsOnPathsForDifferentLevels(roomA, roomB) {
     var min_distance = 1000; // unrealistic maximal distance
     var min_paths = null;
     for (var i in strais_elevators) {
-        if (strais_elevators[i]["category"] == 3) break; // ignore toilettes
+        if (strais_elevators[i]["category"] == 3) continue; // ignore toilettes
         var detailsPathC_levelA = getDetailsOfNearestPath(strais_elevators[i].door_coordinates, pathsLevelA);
         var detailsPathC_levelB = getDetailsOfNearestPath(strais_elevators[i].door_coordinates, pathsLevelB);
         if (distanceBetweenTwoPoints(strais_elevators[i].door_coordinates, detailsPathC_levelB["point"]) > 10) {
             // stairs or elevator finds no shortest path
-            break;
+            continue;
         }
         var all_possible_pathsA = getAllPossiblePaths(getConectionArrayPaths(pathsLevelA), [
             [Number(detailsPathA["path_index"])]
@@ -651,14 +651,18 @@ function shortestPathGetInfos(all_possible_paths, all_paths, pointA, pointB, roo
         var tmp_shortestPath = [];
 
         if (all_possible_paths[k].length < 2) {
-            output.push(new Route(roomA.door_coordinates, pointA, true, false, !from_room_is_elevator))
+            if (distanceBetweenTwoPoints(roomA.door_coordinates, pointA) > 0) {
+                output.push(new Route(roomA.door_coordinates, pointA, true, false, !from_room_is_elevator))
+            }
             output.push(new Route(pointA, pointB, false, false));
             output.push(new Route(pointB, roomB.door_coordinates, false, true, false));
             return output;
         }
         var tmp_point2 = 0;
         var tmp_point = pointWherePathsAreConnected(all_paths[all_possible_paths[k][0]], all_paths[all_possible_paths[k][1]]);
-        tmp_shortestPath.push(new Route(roomA.door_coordinates, pointA, true, false, !from_room_is_elevator))
+        if (distanceBetweenTwoPoints(roomA.door_coordinates, pointA) > 0) {
+            tmp_shortestPath.push(new Route(roomA.door_coordinates, pointA, true, false, !from_room_is_elevator))
+        }
         tmp_shortestPath.push(new Route(pointA, tmp_point, false, false, false));
         for (var i = 1; i < all_possible_paths[k].length - 1; i++) {
             tmp_point2 = pointWherePathsAreConnected(all_paths[all_possible_paths[k][i]], all_paths[all_possible_paths[k][i + 1]]);
@@ -964,14 +968,13 @@ function nextStepClicked() {
                 navigationFinished();
                 return;
             }
-            if (current_step < shortest_nav_path1.length) {
+            if (current_step < shortest_nav_path1.length || second_route && (current_step < shortest_nav_path2.length)) {
                 if (second_route) {
                     displayFullNavigation(to_room_object.level, shortest_nav_path2)
                 } else {
                     displayFullNavigation(from_room_object.level, shortest_nav_path1)
                 }
             } else {
-                //console.log(shortest_nav_path2)
                 second_route = true;
                 current_step = 0;
                 displayFullNavigation(to_room_object.level, shortest_nav_path2, true)

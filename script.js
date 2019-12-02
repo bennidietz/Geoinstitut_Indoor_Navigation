@@ -514,7 +514,7 @@ function calculateRoute(roomA, roomB) {
     $(".scrollmenu").find(">:first-child").css("opacity", "1.0");
     document.getElementsByClassName("arrow_images")[0].style.opacity = "1.0";
     document.getElementsByClassName("distances")[0].style.opacity = "1.0";
-    //readNextStep()
+    readNextStep()
 }
 
 if (document.layers) {
@@ -1003,7 +1003,7 @@ function nextStepClicked() {
             document.getElementsByClassName("arrow_images")[0].style.opacity = "1.0";
             document.getElementsByClassName("distances")[0].style.opacity = "1.0";
         }
-        //readNextStep()
+        readNextStep()
         $("#label_next_step").text(strings["next_step"][language_index])
         if (shortest_nav_path2) {
             if (second_route && current_step == shortest_nav_path2.length - 1) {
@@ -1049,6 +1049,44 @@ function navigationFinished() {
     var audio = new Audio('success_tone.mp3');
     audio.play();
     setTimeout(function() { stopConfetti(); }, 2000);
+}
+
+function getTextNextStep() {
+    if (document.getElementsByClassName("distances").length == 0) {
+        return strings["destination_reached"][language_index];
+    }
+    var distance = document.getElementsByClassName("distances")[0].innerHTML;
+
+    var direction = ""
+    if ((document.getElementsByClassName("arrow_images")[0].src + "").includes("left")) {
+        direction = "links";
+        return strings["please_turn_and_go"][language_index].replace("%s1", strings["left"][language_index]).replace("%s2", distance);
+    } else if ((document.getElementsByClassName("arrow_images")[0].src + "").includes("right")) {
+        return strings["please_turn_and_go"][language_index].replace("%s1", strings["right"][language_index]).replace("%s2", distance);
+    } else if ((document.getElementsByClassName("arrow_images")[0].src + "").includes("up")) {
+        return strings["walk_direction_arrow"][language_index].replace("%s1", distance);
+    } else {
+        // change level
+        if (used_stairs_elevator.category == 1) {
+            // stairs
+            return strings["take_stairs_elevator"][language_index].replace("%s1", strings["the_stairs"][language_index]).replace("%s2", distance);
+        } else {
+            // elevator
+            return strings["take_stairs_elevator"][language_index].replace("%s1", strings["the_elevator"][language_index]).replace("%s2", distance);
+        }
+    }
+}
+
+function readNextStep() {
+    readText(getTextNextStep());
+}
+
+function readText(text) {
+    var msg = new SpeechSynthesisUtterance(text);
+    if (language_index == 1) {
+        msg.lang = 'en-GB';
+    }
+    window.speechSynthesis.speak(msg);
 }
 
 function displayInfoBottom(html_text) {

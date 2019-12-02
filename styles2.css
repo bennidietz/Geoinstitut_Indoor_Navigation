@@ -8,6 +8,10 @@ th {
     width: 33%;
 }
 
+#language_spinner {
+    font-size: 2em;
+}
+
 .header {
     padding: 4% 4%;
     background: #172154;

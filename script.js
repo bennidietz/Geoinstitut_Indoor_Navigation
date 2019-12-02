@@ -1087,6 +1087,7 @@ function readText(text) {
         msg.lang = 'en-GB';
         //responsiveVoice.speak(text, "UK English Male", { rate: 0.8 });
     } else {
+        msg.lang = 'de-DE';
         //responsiveVoice.speak(text, "Deutsch Female", { rate: 0.8 });
     }
     window.speechSynthesis.speak(msg);

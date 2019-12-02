@@ -1085,13 +1085,11 @@ function readText(text) {
     var msg = new SpeechSynthesisUtterance(text);
     if (language_index == 1) {
         msg.lang = 'en-GB';
-    }
-    if (language_index == 1) {
-        responsiveVoice.speak(text, "UK English Male", { rate: 0.8 });
+        //responsiveVoice.speak(text, "UK English Male", { rate: 0.8 });
     } else {
-        responsiveVoice.speak(text, "Deutsch Female", { rate: 0.8 });
+        //responsiveVoice.speak(text, "Deutsch Female", { rate: 0.8 });
     }
-    //window.speechSynthesis.speak(msg);
+    window.speechSynthesis.speak(msg);
 }
 
 function displayInfoBottom(html_text) {

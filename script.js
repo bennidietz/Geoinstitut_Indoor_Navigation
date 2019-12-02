@@ -1359,7 +1359,12 @@ function getImageURLForLevel(level) {
 
 function setToRoom(to_room_number) {
     var current_loc = window.location + "";
-    var end_loc = current_loc.substr(0, current_loc.indexOf(".html") + 5) + "?" + language_param_str + "=" + lang;
+    var end_loc = "";
+    if (current_loc.indexOf(".html") > -1) {
+        end_loc = current_loc.substr(0, current_loc.indexOf(".html") + 5) + "?" + language_param_str + "=" + lang;
+    } else {
+        end_loc = current_loc.substr(0, current_loc.lastIndexOf("/")) + "?" + language_param_str + "=" + lang;
+    }
     if (from_room) {
         end_loc += "&" + from_room_param_str + "=" + from_room;
     }
@@ -1371,7 +1376,12 @@ function setToRoom(to_room_number) {
 
 function setFromAndToRoom(from_room_number, to_room_number) {
     var current_loc = window.location + "";
-    var end_loc = current_loc.substr(0, current_loc.indexOf(".html") + 5) + "?" + language_param_str + "=" + lang;
+    var end_loc = "";
+    if (current_loc.indexOf(".html") > -1) {
+        end_loc = current_loc.substr(0, current_loc.indexOf(".html") + 5) + "?" + language_param_str + "=" + lang;
+    } else {
+        end_loc = current_loc.substr(0, current_loc.lastIndexOf("/")) + "?" + language_param_str + "=" + lang;
+    }
     if (to_room_number) {
         end_loc += "&" + to_room_param_str + "=" + to_room_number;
     }
@@ -1383,7 +1393,12 @@ function setFromAndToRoom(from_room_number, to_room_number) {
 
 function setFromRoom(from_room_number) {
     var current_loc = window.location + "";
-    var end_loc = current_loc.substr(0, current_loc.indexOf(".html") + 5) + "?" + language_param_str + "=" + lang;
+    var end_loc = "";
+    if (current_loc.indexOf(".html") > -1) {
+        end_loc = current_loc.substr(0, current_loc.indexOf(".html") + 5) + "?" + language_param_str + "=" + lang;
+    } else {
+        end_loc = current_loc.substr(0, current_loc.lastIndexOf("/")) + "?" + language_param_str + "=" + lang;
+    }
     if (to_room) {
         end_loc += "&" + to_room_param_str + "=" + to_room;
     }

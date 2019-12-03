@@ -59,7 +59,12 @@ var to_room_object = null;
 
 $('#language_spinner').on('change', function() {
     var current_loc = window.location + "";
-    var end_loc = current_loc.substr(0, current_loc.indexOf(".html") + 5) + "?" + language_param_str + "=" + this.value;
+    var end_loc = "";
+    if (current_loc.indexOf(".html") > -1) {
+        end_loc = current_loc.substr(0, current_loc.indexOf(".html") + 5) + "?" + language_param_str + "=" + this.value;
+    } else {
+        end_loc = current_loc.substr(0, current_loc.lastIndexOf("/")) + "?" + language_param_str + "=" + this.value;
+    }
     if (from_room) {
         end_loc += "&" + from_room_param_str + "=" + from_room;
     }

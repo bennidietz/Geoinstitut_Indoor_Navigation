@@ -8,6 +8,15 @@ th {
     width: 33%;
 }
 
+li {
+    margin-bottom: 5%;
+}
+
+#qr_code_section {
+    font-size: 3em;
+    margin: 5%;
+}
+
 #language_spinner {
     font-size: 2em;
 }

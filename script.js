@@ -327,6 +327,10 @@ function onRoomsLoaded() {
     $("#etagen_btn5").text(strings["floor_5"][language_index])
     $("#etagen_btn6").text(strings["floor_6"][language_index])
     $("#etagen_btn7").text(strings["floor_7"][language_index])
+    $("#description_qr").html(strings["description_qr"][language_index])
+    $("#qr_expl_step1").html(strings["qr_expl_step1"][language_index])
+    $("#qr_expl_step2").html(strings["qr_expl_step2"][language_index])
+    $("#qr_expl_step3").html(strings["qr_expl_step3"][language_index])
     if (from_room_object) {
         etagen_nummer = from_room_object.level;
         $("#label_from_room").text(strings["from_room"][language_index])
@@ -409,7 +413,7 @@ function displaySection(section_index) {
     $("#from_room_options, #to_room_options, #floor_plan_section, .autocomplete").css("display", "none")
     $(".footer").css("display", "block")
     $("#back_button").css("display", "none")
-    $("#preview").css("display", "none");
+    $("#qr_code_section").css("display", "none");
     switch (section_index) {
         case 0:
             // options for location
@@ -423,7 +427,9 @@ function displaySection(section_index) {
         case 2:
             // qr code scanner
             $("#back_button").css("display", "block")
-            $("#preview").css("display", "block");
+            $("#qr_code_section").css("display", "block");
+            $(".footer").css("display", "none")
+            break;
             let scanner = new Instascan.Scanner({ video: document.getElementById('preview') });
             scanner.addListener('scan', function(content) {
                 window.location = content;

@@ -30,7 +30,9 @@
         <button id="camera--trigger">Take a picture</button>
 
     </main>
+    <a href="intent://scan/#Intent;scheme=zxing;package=com.google.zxing.client.android;end"> Take a QR code </a>
     <script>
+        window.open
         alert(window.deviceInfos + "")
         MediaStreamTrack.getSources()
         alert(JSON.stringify(MediaStreamTrack.getSources()))

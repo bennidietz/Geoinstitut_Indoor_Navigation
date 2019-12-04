@@ -320,6 +320,8 @@ function onRoomsLoaded() {
     $("#option1_fromroom").text(strings["scan_qr_code_from_room"][language_index]);
     $("#option2_fromroom").text(strings["select_room_on_floorplan"][language_index]);
     $("#option3_fromroom").text(strings["search_list_of_rooms"][language_index]);
+    $("#option4_fromroom_section").css("background", "#172154");
+    $("#option4_fromroom").text(strings["chose_entry_building"][language_index]);
     $("#value_label_destination").text(strings["destermine_my_destination"][language_index] + ":");
     $("#option1_toroom").text(strings["select_room_on_floorplan"][language_index]);
     $("#option2_toroom").text(strings["search_list_of_rooms"][language_index]);
@@ -789,7 +791,10 @@ function getDirectionOfRoute(from_point, to_point) {
 }
 
 function getAllPossiblePathsWithoutStarisPathsInMiddle(connections, path_lines, destiny_path_index, level) {
-    var ignore_path_with = Number(pathsIsOnlyForElevator(level)["path_index"])
+    var ignore_path_with = null;
+    if (pathsIsOnlyForElevator(level)) {
+        ignore_path_with = Number(pathsIsOnlyForElevator(level)["path_index"]);
+    }
     console.log(ignore_path_with)
     var poss_paths = getAllPossiblePaths(connections, path_lines, destiny_path_index);
     var delete_paths = []
@@ -1066,7 +1071,7 @@ function getTextNextStep() {
     if (document.getElementsByClassName("distances").length == 0) {
         return strings["destination_reached"][language_index];
     }
-    var distance = document.getElementsByClassName("distances")[0].innerHTML;
+    var distance = document.getElementsByClassName("distances")[0].innerHTML.replace("&lt;", strings["less_than"][language_index]);
 
     var direction = ""
     if ((document.getElementsByClassName("arrow_images")[0].src + "").includes("left")) {
@@ -1077,6 +1082,7 @@ function getTextNextStep() {
     } else if ((document.getElementsByClassName("arrow_images")[0].src + "").includes("up")) {
         return strings["walk_direction_arrow"][language_index].replace("%s1", distance);
     } else {
+        if (!used_stairs_elevator) return "";
         // change level
         if (used_stairs_elevator.category == 1) {
             // stairs

@@ -300,6 +300,10 @@ div.scrollmenu table:hover {
     justify-content: center;
 }
 
+select {
+    background-color: transparent;
+}
+
 .button_room_select {
     margin-left: 20%;
     margin-right: 20%;

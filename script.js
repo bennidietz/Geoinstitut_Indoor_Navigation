@@ -398,7 +398,7 @@ function onRoomsLoaded() {
     }
     var used_height_space = window.innerHeight - ($("#myHeader").height() + document.getElementById('canvas').height + $("#footer_table").height() + 80);
     $(".arrow_table").css("maxHeight", used_height_space);
-    $(".arrow_table").css("maxWidth", used_height_space);
+    $(".arrow_table").css("maxWidth", used_height_space * 6 / 7);
     $(".arrow_images").css("maxWidth", (window.innerHeight - window.innerWidth) / 3);
     if (!to_room_object || !from_room_object) {
         displayInfoBottom(strings["select_room"][language_index])

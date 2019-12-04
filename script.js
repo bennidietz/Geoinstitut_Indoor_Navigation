@@ -505,15 +505,12 @@ function calculateRoute(roomA, roomB) {
         console.log(shortest_nav_path2)
         displayFullNavigation(from_room_object.level, shortest_nav_path1);
     }
-    console.log(shortest_nav_path1)
-    console.log(shortest_nav_path2)
     if (shortest_nav_path2) {
         instructions = getInstructionsOfRoutesDifferentLevels(shortest_nav_path1, shortest_nav_path2)
     } else {
         instructions = getInstructionsOfRoutes(shortest_nav_path1)
     }
     for (var k in instructions) {
-        console.log(instructions[k].distance)
         if (instructions[k].distance != null) {
             if (instructions[k].distance == 0) {
                 $(".scrollmenu").append('<table class="arrow_table"><thead><tr><th colspan="1" align="center"><img style="opacity:0.5" class="center arrow_images" src="' + getArrowFileURLFromRouteInstruction(instructions[k]) + '"></th></tr><tr><th colspan="1" class="large_text distances" style="opacity:0.5">< 1 m</th></tr></thead></table>');
@@ -582,7 +579,6 @@ function getInstructionsOfRoutes(routes) {
         var distance = routes[i + 1].distance
         instructions.push(new RouteInstruction(dir, distance, routes[i + 1].endPoint, routes[i].from_qr_code))
     }
-    console.log(instructions)
     return instructions;
 }
 
@@ -795,15 +791,11 @@ function getAllPossiblePathsWithoutStarisPathsInMiddle(connections, path_lines, 
     if (pathsIsOnlyForElevator(level)) {
         ignore_path_with = Number(pathsIsOnlyForElevator(level)["path_index"]);
     }
-    console.log(ignore_path_with)
     var poss_paths = getAllPossiblePaths(connections, path_lines, destiny_path_index);
     var delete_paths = []
     var output = []
     for (var i in poss_paths) {
         for (var j = 1; j < poss_paths[i].length - 1; j++) {
-            console.log(poss_paths[i])
-            console.log(j)
-            console.log(poss_paths[i][j])
             if (poss_paths[i][j] == ignore_path_with) {
                 delete_paths.push(i);
             }
@@ -817,7 +809,6 @@ function getAllPossiblePathsWithoutStarisPathsInMiddle(connections, path_lines, 
     if (output.length == 0) {
         console.log(poss_paths)
     }
-    console.log(output)
     return output;
 }
 
@@ -1071,9 +1062,7 @@ function getTextNextStep() {
     if (document.getElementsByClassName("distances").length == 0) {
         return strings["destination_reached"][language_index];
     }
-    var distance = document.getElementsByClassName("distances")[0].innerHTML.replace("&lt;", strings["less_than"][language_index]);
-
-    var direction = ""
+    var distance = document.getElementsByClassName("distances")[0].innerHTML.replace("&lt;", strings["less_than"][language_index]).replace(" m", " " + strings["meter"][language_index]);
     if ((document.getElementsByClassName("arrow_images")[0].src + "").includes("left")) {
         direction = "links";
         return strings["please_turn_and_go"][language_index].replace("%s1", strings["left"][language_index]).replace("%s2", distance);
@@ -1086,10 +1075,10 @@ function getTextNextStep() {
         // change level
         if (used_stairs_elevator.category == 1) {
             // stairs
-            return strings["take_stairs_elevator"][language_index].replace("%s1", strings["the_stairs"][language_index]).replace("%s2", distance);
+            return strings["take_stairs_elevator"][language_index].replace("%s1", strings["the_stairs"][language_index]).replace("%s2", strings["name_floor_" + to_room_object.level][language_index]);
         } else {
             // elevator
-            return strings["take_stairs_elevator"][language_index].replace("%s1", strings["the_elevator"][language_index]).replace("%s2", distance);
+            return strings["take_stairs_elevator"][language_index].replace("%s1", strings["the_elevator"][language_index]).replace("%s2", strings["name_floor_" + to_room_object.level][language_index]);
         }
     }
 }

@@ -27,6 +27,7 @@ const strings = {
     "the_elevator": ["den Fahrstuhl", "the elevator", ""],
     "right": ["rechts", "right", ""],
     "category": ["Kategorie", "Category", ""],
+    "question_only_elevator": ["Wollen Sie nur den Fahrstuhl für die Navigation verwenden?", "Do you only want to use the elevator for the navigation?", ""],
     "destermine_my_position": ["Meinen Standort bestimmen", "Determine my location", ""],
     "destermine_my_destination": ["Meinen Zielraum bestimmen", "Determine my destination", ""],
     "scan_qr_code_from_room": ["QR-Code von Raum scannen", "Scan QR-Code from room", ""],

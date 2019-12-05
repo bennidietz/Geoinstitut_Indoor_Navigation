@@ -526,7 +526,13 @@ function calculateRoute(roomA, roomB) {
                 $(".scrollmenu").append('<table class="arrow_table"><thead><tr><th colspan="1" align="center"><img style="opacity:0.3" class="center arrow_images" src="' + getArrowFileURLFromRouteInstruction(instructions[k]) + '"></th></tr><tr><th colspan="1" class="large_text distances" style="opacity:0.3">' + instructions[k].distance + ' m</th></tr></thead></table>');
             }
         } else {
-            $(".scrollmenu").append('<table class="arrow_table"><thead><tr><th colspan="1" align="center"><img style="opacity:0.3" class="center arrow_images" src="symbols/stairs.png"></th></tr><tr><th colspan="1" class="large_text distances" style="opacity:0.3">' + $("#etagen_btn" + Number(to_room_object.level)).text() + '</th></tr></thead></table>');
+            console.log(used_stairs_elevator)
+            if (used_stairs_elevator.category == 2) {
+                // elevator
+                $(".scrollmenu").append('<table class="arrow_table"><thead><tr><th colspan="1" align="center"><img style="opacity:0.3" class="center arrow_images" src="symbols/elevator.jpg"></th></tr><tr><th colspan="1" class="large_text distances" style="opacity:0.3">' + $("#etagen_btn" + Number(to_room_object.level)).text() + '</th></tr></thead></table>');
+            } else {
+                $(".scrollmenu").append('<table class="arrow_table"><thead><tr><th colspan="1" align="center"><img style="opacity:0.3" class="center arrow_images" src="symbols/stairs.png"></th></tr><tr><th colspan="1" class="large_text distances" style="opacity:0.3">' + $("#etagen_btn" + Number(to_room_object.level)).text() + '</th></tr></thead></table>');
+            }
         }
     }
     $(".scrollmenu").find(">:first-child").css("opacity", "1.0");
@@ -987,7 +993,7 @@ function displayFullNavigation(level, shortest_path, second_paths) {
 }
 
 function elevator_symbol_pressed() {
-    if (confirm("Wollen Sie nur den Fahrstuhl für die Navigation verwenden?")) {
+    if (confirm(strings["question_only_elevator"][language_index])) {
         setOnlyElev(true);
     }
 }

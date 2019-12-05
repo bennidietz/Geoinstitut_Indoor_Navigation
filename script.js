@@ -3,11 +3,17 @@ const to_symbols_folder = "symbols/";
 const from_room_param_str = "from_room";
 const to_room_param_str = "to_room";
 const language_param_str = "lang";
+const only_elevator_param_str = "only_elevator";
 
 var current_url = new URL(window.location);
 var from_room = current_url.searchParams.get(from_room_param_str);
 var to_room = current_url.searchParams.get(to_room_param_str);
 var lang = current_url.searchParams.get(language_param_str);
+var elev = current_url.searchParams.get(only_elevator_param_str);
+var only_elevator = false;
+if (elev && Number(elev) == 1) {
+    only_elevator = true;
+}
 var screen_width = window.innerWidth;
 var scale_desktop_version_canvas = 6 / 10;
 if (to_room) {
@@ -502,7 +508,9 @@ function calculateRoute(roomA, roomB) {
         console.log(two_paths)
         shortest_nav_path1 = two_paths[0];
         shortest_nav_path2 = two_paths[1];
-        console.log(shortest_nav_path2)
+        if (!only_elevator) {
+            $("#elevator_button").attr("src", "symbols/elevator.jpg")
+        }
         displayFullNavigation(from_room_object.level, shortest_nav_path1);
     }
     if (shortest_nav_path2) {
@@ -513,12 +521,12 @@ function calculateRoute(roomA, roomB) {
     for (var k in instructions) {
         if (instructions[k].distance != null) {
             if (instructions[k].distance == 0) {
-                $(".scrollmenu").append('<table class="arrow_table"><thead><tr><th colspan="1" align="center"><img style="opacity:0.5" class="center arrow_images" src="' + getArrowFileURLFromRouteInstruction(instructions[k]) + '"></th></tr><tr><th colspan="1" class="large_text distances" style="opacity:0.5">< 1 m</th></tr></thead></table>');
+                $(".scrollmenu").append('<table class="arrow_table"><thead><tr><th colspan="1" align="center"><img style="opacity:0.3" class="center arrow_images" src="' + getArrowFileURLFromRouteInstruction(instructions[k]) + '"></th></tr><tr><th colspan="1" class="large_text distances" style="opacity:0.3">< 1 m</th></tr></thead></table>');
             } else {
-                $(".scrollmenu").append('<table class="arrow_table"><thead><tr><th colspan="1" align="center"><img style="opacity:0.5" class="center arrow_images" src="' + getArrowFileURLFromRouteInstruction(instructions[k]) + '"></th></tr><tr><th colspan="1" class="large_text distances" style="opacity:0.5">' + instructions[k].distance + ' m</th></tr></thead></table>');
+                $(".scrollmenu").append('<table class="arrow_table"><thead><tr><th colspan="1" align="center"><img style="opacity:0.3" class="center arrow_images" src="' + getArrowFileURLFromRouteInstruction(instructions[k]) + '"></th></tr><tr><th colspan="1" class="large_text distances" style="opacity:0.3">' + instructions[k].distance + ' m</th></tr></thead></table>');
             }
         } else {
-            $(".scrollmenu").append('<table class="arrow_table"><thead><tr><th colspan="1" align="center"><img style="opacity:0.3" class="center arrow_images" src="symbols/stairs.png"></th></tr><tr><th colspan="1" class="large_text distances" style="opacity:0.5">' + $("#etagen_btn" + Number(to_room_object.level)).text() + '</th></tr></thead></table>');
+            $(".scrollmenu").append('<table class="arrow_table"><thead><tr><th colspan="1" align="center"><img style="opacity:0.3" class="center arrow_images" src="symbols/stairs.png"></th></tr><tr><th colspan="1" class="large_text distances" style="opacity:0.3">' + $("#etagen_btn" + Number(to_room_object.level)).text() + '</th></tr></thead></table>');
         }
     }
     $(".scrollmenu").find(">:first-child").css("opacity", "1.0");
@@ -619,6 +627,7 @@ function getShortestPathBetweenPointsOnPathsForDifferentLevels(roomA, roomB) {
     var min_paths = null;
     for (var i in strais_elevators) {
         if (strais_elevators[i]["category"] == 3) continue; // ignore toilettes
+        if (only_elevator && strais_elevators[i]["category"] == 1) continue;
         var detailsPathC_levelA = getDetailsOfNearestPath(strais_elevators[i].door_coordinates, pathsLevelA);
         var detailsPathC_levelB = getDetailsOfNearestPath(strais_elevators[i].door_coordinates, pathsLevelB);
         if (distanceBetweenTwoPoints(strais_elevators[i].door_coordinates, detailsPathC_levelB["point"]) > 10) {
@@ -927,10 +936,12 @@ function displayFullNavigation(level, shortest_path, second_paths) {
     img.onload = function() {
         ctx.drawImage(img, 0, 0, img.width, img.height, 0, 0, screen_width, screen_width);
         if (current_step == shortest_path.length - 1) {
-            if (shortest_nav_path2 && !second_route) {
-                highLightRoom(ctx, used_stairs_elevator.spatial_extend, canvas.width, canvas.height, "rgba(0, 100, 0, 0.5)")
-            } else {
-                highLightRoom(ctx, to_room_object.spatial_extend, canvas.width, canvas.height, "rgba(0, 100, 0, 0.5)")
+            if (shortest_nav_path2 && !second_route) {} else {
+                highLightRoom(ctx, to_room_object.spatial_extend, canvas.width, canvas.height, "rgba(0, 100, 0, 0.6)")
+            }
+        } else {
+            if (shortest_nav_path2 && !second_route) {} else {
+                highLightRoom(ctx, to_room_object.spatial_extend, canvas.width, canvas.height, "rgba(0, 100, 0, 0.2)")
             }
         }
         if (shortest_nav_path2 && !second_route) {
@@ -942,14 +953,21 @@ function displayFullNavigation(level, shortest_path, second_paths) {
         for (var i in paths[to_room_object.level]) {
             //drawLineRelative(ctx, paths[to_room_object.level][i].startPoint, paths[to_room_object.level][i].endPoint, canvas.width, canvas.height, "orange")
         }
+        if (level == from_room_object.level) {
+            writeRoomNr(ctx, from_room_object, canvas.width, canvas.height);
+        }
+        if (level == to_room_object.level) {
+            writeRoomNr(ctx, to_room_object, canvas.width, canvas.height);
+        }
         if (current_step != shortest_path.length - 1) {
             var location_arrow = new Image;
             location_arrow.onload = function() {
                 var arrow_size = 60;
                 if (current_step == 0) {
-                    ctx.drawImage(location_arrow, shortest_path[current_step].startPoint[0] * canvas.width / 100 - arrow_size / 2, shortest_path[current_step].startPoint[1] * canvas.width / 100 - arrow_size / 2, arrow_size, arrow_size);
+                    console.log(shortest_path)
+                        //ctx.drawImage(location_arrow, shortest_path[current_step].startPoint[0] * canvas.width / 100 - arrow_size / 2, shortest_path[current_step].startPoint[1] * canvas.width / 100 - arrow_size / 2, arrow_size, arrow_size);
+                    drawCircle(ctx, shortest_path[0].startPoint[0] * canvas.width / 100, shortest_path[0].startPoint[1] * canvas.height / 100, "red")
                 } else {
-
                     ctx.drawImage(location_arrow, shortest_path[current_step].startPoint[0] * canvas.width / 100 - arrow_size / 2, shortest_path[current_step].startPoint[1] * canvas.width / 100 - arrow_size / 2, arrow_size, arrow_size);
                 }
             }
@@ -966,6 +984,12 @@ function displayFullNavigation(level, shortest_path, second_paths) {
         displayRouteBetweenPoints(ctx, shortest_path, canvas.width, canvas.height);
     };
     img.src = getImageURLForLevel(level);
+}
+
+function elevator_symbol_pressed() {
+    if (confirm("Wollen Sie nur den Fahrstuhl für die Navigation verwenden?")) {
+        setOnlyElev(true);
+    }
 }
 
 function pathsIsOnlyForElevator(level) {
@@ -1210,17 +1234,24 @@ function setImageWithoutRoute(level, roomHighlighted) {
         }
         for (var i in rooms_order_after_level[level]) {
             highLightRoom(ctx, rooms_order_after_level[level][i].spatial_extend, canvas.width, canvas.height, "rgba(0, 100, 0, 0.1)")
-            if (rooms_order_after_level[level][i].width < 8) {
-                canvasWriteText(ctx, rooms_order_after_level[level][i].spatial_extend, canvas.width, canvas.height, rooms_order_after_level[level][i].room_nr, 20, 15, 7)
-            } else {
-                canvasWriteText(ctx, rooms_order_after_level[level][i].spatial_extend, canvas.width, canvas.height, rooms_order_after_level[level][i].room_nr, 25, 22, 10)
-            }
+            writeRoomNr(ctx, rooms_order_after_level[level][i], canvas.width, canvas.height)
+        }
+        for (var i in paths[level]) {
+            drawLineRelativeWidth(ctx, paths[level][i].startPoint, paths[level][i].endPoint, canvas.width, canvas.height, "rgba(190,190,190,0.4)", 1)
         }
         if (roomHighlighted) {
             highLightRoom(ctx, roomHighlighted.spatial_extend, canvas.width, canvas.height, "rgba(0, 100, 0, 0.5)")
         }
     };
     img.src = getImageURLForLevel(level);
+}
+
+function writeRoomNr(ctx, room_object, width, height) {
+    if (room_object.width < 8) {
+        canvasWriteText(ctx, room_object.spatial_extend, width, height, room_object.room_nr, 20, 15, 7)
+    } else {
+        canvasWriteText(ctx, room_object.spatial_extend, width, height, room_object.room_nr, 25, 22, 10)
+    }
 }
 
 function canvasWriteText(ctx, spatial_extend, cvwidth, cvheight, text, text_size, shift_X_minus, shift_Y_plus) {
@@ -1363,6 +1394,27 @@ function getImageURLForLevel(level) {
     return to_floor_plans_folder + img_name;
 
 }
+
+function setOnlyElev(onlyelev) {
+    var current_loc = window.location + "";
+    var end_loc = "";
+    if (current_loc.indexOf(".html") > -1) {
+        end_loc = current_loc.substr(0, current_loc.indexOf(".html") + 5) + "?" + language_param_str + "=" + lang;
+    } else {
+        end_loc = current_loc.substr(0, current_loc.lastIndexOf("/")) + "?" + language_param_str + "=" + lang;
+    }
+    if (from_room) {
+        end_loc += "&" + from_room_param_str + "=" + from_room;
+    }
+    if (to_room_object) {
+        end_loc += "&" + to_room_param_str + "=" + to_room_object.room_nr;
+    }
+    if (onlyelev) {
+        end_loc += "&" + only_elevator_param_str + "=" + 1;
+    }
+    window.location = end_loc;
+}
+
 
 function setToRoom(to_room_number) {
     var current_loc = window.location + "";

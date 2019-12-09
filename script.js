@@ -420,6 +420,7 @@ function onRoomsLoaded() {
         displayInfoBottom(strings["select_room"][language_index])
     }
     $("#myHeader").css("width", window.innerWidth + 30);
+    alert("hier")
     showMainSection();
 }
 

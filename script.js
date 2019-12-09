@@ -96,6 +96,10 @@ class Room {
         this.description = json["description"];
         this.width = Number(json["x2"]) - Number(json["x1"]);
         this.height = Number(json["y2"]) - Number(json["y1"]);
+        this.people = [];
+        for (var i in json["people"]) {
+            this.people.push(json["people"][i]);
+        }
     }
 
     getInstitutName(institut_json) {
@@ -194,7 +198,7 @@ function getCertainPointOnPaths(start_coor, direction, r) {
 }
 
 function api(type, query) {
-    var authorization_key = '1234';
+    var authorization_key = 'GEO1';
     var url = 'https://christian-terbeck.de/projects/ba/request.php';
 
     $.ajax({
@@ -382,7 +386,13 @@ function onRoomsLoaded() {
         $("#autocomplete_search").attr("placeholder", strings["autocomplete_placeholder"][language_index]);
         var autocomplete_options = [];
         for (var i in rooms_order_after_roomnr) {
-            autocomplete_options.push(i + " - " + rooms_order_after_roomnr[i]["institute"]["name"])
+            console.log(rooms_order_after_roomnr[i].people.length > 0)
+            if (rooms_order_after_roomnr[i].people.length > 0) {
+                console.log(rooms_order_after_roomnr[i])
+                autocomplete_options.push(i + " - " + rooms_order_after_roomnr[i].people[0] + " - " + rooms_order_after_roomnr[i]["institute"]["name"])
+            } else {
+                autocomplete_options.push(i + " - " + rooms_order_after_roomnr[i]["institute"]["name"])
+            }
         }
         autocomplete(document.getElementById("autocomplete_search"), autocomplete_options, "autocomplete_search");
         $("#autocomplete_search").trigger("change")
@@ -1322,12 +1332,16 @@ canvas.addEventListener('click', function(e) {
                     $("#room_details").html(html);
                 }
             } else {
+                var end_html = "";
+                if (room_obj.people.length > 0) {
+                    end_html += '<br><b>' + strings["staff"][language_index] + ": </b>" + room_obj.people[0];
+                }
                 if (from_room_object) {
                     var html = "<btn class='button_room_select' onclick='setToRoomCurrentlySelected()'>=> " + strings["navigate_to_room"][language_index] + "</btn>" + "<b>";
-                    $("#room_details").html(html + "<div style='padding:20px;background: orange; font-size: 2.5em;'>" + "</b><b>" + strings["room_nr"][language_index] + ":</b> " + String(room_obj.room_nr) + '<br><b>' + strings["institute"][language_index] + ": </b>" + room_obj.institute["name"] + "</div>");
+                    $("#room_details").html(html + "<div style='padding:20px;background: orange; font-size: 2.5em;'>" + "</b><b>" + strings["room_nr"][language_index] + ":</b> " + String(room_obj.room_nr) + '<br><b>' + strings["institute"][language_index] + ": </b>" + room_obj.institute["name"] + end_html + "</div>");
                 } else {
                     var html = "<btn class='button_room_select' onclick='setFromRoomCurrentlySelected()'>=> " + strings["start_from_here"][language_index] + "</btn>" + "<b>";
-                    $("#room_details").html(html + "<div style='padding:20px;background: orange; font-size: 2.5em;'>" + "</b><b>" + strings["room_nr"][language_index] + ":</b> " + String(room_obj.room_nr) + '<br><b>' + strings["institute"][language_index] + ": </b>" + room_obj.institute["name"] + "</div>");
+                    $("#room_details").html(html + "<div style='padding:20px;background: orange; font-size: 2.5em;'>" + "</b><b>" + strings["room_nr"][language_index] + ":</b> " + String(room_obj.room_nr) + '<br><b>' + strings["institute"][language_index] + ": </b>" + room_obj.institute["name"] + end_html + "</div>");
                 }
             }
         }

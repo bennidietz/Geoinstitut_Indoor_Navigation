@@ -1450,6 +1450,9 @@ function setToRoom(to_room_number) {
     if (to_room_number) {
         end_loc += "&" + to_room_param_str + "=" + to_room_number;
     }
+    if (only_elevator) {
+        end_loc += "&" + only_elevator_param_str + "=" + 1;
+    }
     window.location = end_loc;
 }
 
@@ -1483,6 +1486,9 @@ function setFromRoom(from_room_number) {
     }
     if (from_room_number) {
         end_loc += "&" + from_room_param_str + "=" + from_room_number;
+    }
+    if (only_elevator) {
+        end_loc += "&" + only_elevator_param_str + "=" + 1;
     }
     window.location = end_loc;
 }

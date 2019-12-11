@@ -15,7 +15,7 @@ if (elev && Number(elev) == 1) {
     only_elevator = true;
 }
 var screen_width = window.innerWidth;
-var scale_desktop_version_canvas = 7 / 10;
+var scale_desktop_version_canvas = 7.5 / 10;
 if (to_room) {
     var to_level = to_room.substr(0, 1);
 }
@@ -1051,7 +1051,7 @@ function nextStepClicked() {
             document.getElementsByClassName("distances")[0].style.opacity = "1.0";
         }
         readNextStep()
-        $("#label_next_step").text(strings["next_step"][language_index])
+        $("#label_next_step").html(strings["next_step"][language_index])
         if (shortest_nav_path2) {
             if (second_route && current_step == shortest_nav_path2.length - 1) {
                 // navigation is finished

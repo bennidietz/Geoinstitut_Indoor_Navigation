@@ -37,6 +37,7 @@ const strings = {
     "chose_entry_building": ["Den Eingang vom Gebäude wählen", "Chose the entry of the building", ""],
     "reset_position": ["Ausgangsposition<br>zurücksetzen", "Reset<br>initial position", ""],
     "navigate_to_room": ["Zum Raum navigieren", "Navigate to room", ""],
+    "one_meter": [" einen ", " one ", ""],
     "you_stand_infront_of_the_room": ["Sie stehen vor dem Raum ", "You stand in front of the room ", ""],
     "start_from_here": ["Von hier starten", "Start from here", ""],
     "title_application": ["Indoor Navigation Geoinstitut Münster", "Indoor Navigation Geoinstitut Münster", "Navegación en interiores Geoinstitut Münster"],

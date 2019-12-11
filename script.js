@@ -1108,11 +1108,11 @@ function getTextNextStep() {
         text += strings["you_stand_infront_of_the_room"][language_index] + from_room_object.room_nr;
     }
     if ((document.getElementsByClassName("arrow_images")[0].src + "").includes("left")) {
-        return text + strings["please_turn_and_go"][language_index].replace("%s1", strings["left"][language_index]).replace("%s2", distance);
+        text += strings["please_turn_and_go"][language_index].replace("%s1", strings["left"][language_index]).replace("%s2", distance);
     } else if ((document.getElementsByClassName("arrow_images")[0].src + "").includes("right")) {
-        return text + strings["please_turn_and_go"][language_index].replace("%s1", strings["right"][language_index]).replace("%s2", distance);
+        text += strings["please_turn_and_go"][language_index].replace("%s1", strings["right"][language_index]).replace("%s2", distance);
     } else if ((document.getElementsByClassName("arrow_images")[0].src + "").includes("up")) {
-        return text + strings["walk_direction_arrow"][language_index].replace("%s1", distance);
+        text += strings["walk_direction_arrow"][language_index].replace("%s1", distance);
     } else {
         if (!used_stairs_elevator) return "";
         // change level
@@ -1124,6 +1124,9 @@ function getTextNextStep() {
             return strings["take_stairs_elevator"][language_index].replace("%s1", strings["the_elevator"][language_index]).replace("%s2", strings["name_floor_" + to_room_object.level][language_index]);
         }
     }
+    text = text.replace(" 1 ", strings["one_meter"][language_index]);
+    console.log(text)
+    return text;
 }
 
 function readNextStep() {

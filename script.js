@@ -1099,17 +1099,20 @@ function navigationFinished() {
 }
 
 function getTextNextStep() {
+    var text = "";
     if (document.getElementsByClassName("distances").length == 0) {
         return strings["destination_reached"][language_index];
     }
     var distance = document.getElementsByClassName("distances")[0].innerHTML.replace("&lt;", strings["less_than"][language_index]).replace(" m", " " + strings["meter"][language_index]);
+    if ((document.getElementsByClassName("arrow_images")[0].src + "").includes("qr")) {
+        text += strings["you_stand_infront_of_the_room"][language_index] + from_room_object.room_nr + '<>';
+    }
     if ((document.getElementsByClassName("arrow_images")[0].src + "").includes("left")) {
-        direction = "links";
-        return strings["please_turn_and_go"][language_index].replace("%s1", strings["left"][language_index]).replace("%s2", distance);
+        return text + strings["please_turn_and_go"][language_index].replace("%s1", strings["left"][language_index]).replace("%s2", distance);
     } else if ((document.getElementsByClassName("arrow_images")[0].src + "").includes("right")) {
-        return strings["please_turn_and_go"][language_index].replace("%s1", strings["right"][language_index]).replace("%s2", distance);
+        return text + strings["please_turn_and_go"][language_index].replace("%s1", strings["right"][language_index]).replace("%s2", distance);
     } else if ((document.getElementsByClassName("arrow_images")[0].src + "").includes("up")) {
-        return strings["walk_direction_arrow"][language_index].replace("%s1", distance);
+        return text + strings["walk_direction_arrow"][language_index].replace("%s1", distance);
     } else {
         if (!used_stairs_elevator) return "";
         // change level

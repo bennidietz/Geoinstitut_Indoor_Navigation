@@ -15,7 +15,7 @@ if (elev && Number(elev) == 1) {
     only_elevator = true;
 }
 var screen_width = window.innerWidth;
-var scale_desktop_version_canvas = 6 / 10;
+var scale_desktop_version_canvas = 7 / 10;
 if (to_room) {
     var to_level = to_room.substr(0, 1);
 }
@@ -404,9 +404,9 @@ function onRoomsLoaded() {
     if (!smartphone) {
         $('.header').removeClass('header').addClass('header_desktop');
         $('.labels_header_table').removeClass('labels_header_table').addClass('labels_header_table_desktop');
-        $('.cancel_table_field').removeClass('cancel_table_field').addClass('cancel_table_field_desktop');
-        $('.next_step_table_field').removeClass('next_step_table_field').addClass('next_step_table_field_desktop');
-        $('.labels_footer_table').removeClass('labels_footer_table').addClass('labels_footer_table_desktop');
+        //$('.cancel_table_field').removeClass('cancel_table_field').addClass('cancel_table_field_desktop');
+        //$('.next_step_table_field').removeClass('next_step_table_field').addClass('next_step_table_field_desktop');
+        //$('.labels_footer_table').removeClass('labels_footer_table').addClass('labels_footer_table_desktop');
     } else {
         $(".etagen_btn").css("height", "80");
         $(".etagen_btn").css("padding-top", "12");

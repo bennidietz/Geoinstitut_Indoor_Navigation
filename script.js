@@ -10,7 +10,7 @@ var from_room = current_url.searchParams.get(from_room_param_str);
 var to_room = current_url.searchParams.get(to_room_param_str);
 var lang = current_url.searchParams.get(language_param_str);
 var elev = current_url.searchParams.get(only_elevator_param_str);
-var only_elevator = false;
+var only_elevator = true;
 if (elev && Number(elev) == 1) {
     only_elevator = true;
 }
@@ -1520,7 +1520,7 @@ function autocomplete(inp, arr, id) {
                 /*create a DIV element for each matching element:*/
                 b = document.createElement("DIV");
                 /*make the matching letters bold:*/
-                b.innerHTML = "<strong>" + arr[i].substr(0, val.length) + "</strong>";
+                b.innerHTML = "" + arr[i].substr(0, val.length) + "";
                 b.innerHTML += arr[i].substr(val.length);
                 /*insert a input field that will hold the current array item's value:*/
                 b.innerHTML += "<input type='hidden' value='" + arr[i] + "'>";
@@ -1561,7 +1561,7 @@ function autocomplete(inp, arr, id) {
             /*create a DIV element for each matching element:*/
             b = document.createElement("DIV");
             /*make the matching letters bold:*/
-            b.innerHTML = "<strong>" + arr[i].substr(0, val.length) + "</strong>";
+            b.innerHTML = "" + arr[i].substr(0, val.length) + "";
             b.innerHTML += arr[i].substr(val.length);
             /*insert a input field that will hold the current array item's value:*/
             b.innerHTML += "<input type='hidden' value='" + arr[i] + "'>";

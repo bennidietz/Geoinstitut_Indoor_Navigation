@@ -46,13 +46,13 @@ const strings = {
     "floor_2": ["EG", "GF"],
     "name_floor_2": ["Erdgeschoss", "ground floor"],
     "floor_3": ["1. OG", "1 UL"],
-    "name_floor_3": ["1. Obergeschoss", "first upper floor"],
+    "name_floor_3": ["erste Obergeschoss", "first upper floor"],
     "floor_4": ["2. OG", "2 UL"],
-    "name_floor_4": ["2. Obergeschoss", "second upper floor"],
+    "name_floor_4": ["zweite Obergeschoss", "second upper floor"],
     "floor_5": ["3. OG", "3 UL"],
-    "name_floor_5": ["3. Obergeschoss", "third upper floor"],
+    "name_floor_5": ["dritte Obergeschoss", "third upper floor"],
     "floor_6": ["4. OG", "4 UL"],
-    "name_floor_6": ["4. Obergeschoss", "forth upper floor"],
+    "name_floor_6": ["vierte Obergeschoss", "forth upper floor"],
     "floor_7": ["5. OG", "5 UL"],
-    "name_floor_7": ["5. Obergeschoss", "fifth upper floor"]
+    "name_floor_7": ["fünfte Obergeschoss", "fifth upper floor"]
 };

@@ -335,8 +335,8 @@ function onRoomsLoaded() {
     $("#value_label_destination").text(strings["destermine_my_destination"][language_index] + ":");
     $("#option1_toroom").text(strings["select_room_on_floorplan"][language_index]);
     $("#option2_toroom").text(strings["search_list_of_rooms"][language_index]);
-    $("#label_cancel").text(strings["cancel"][language_index])
-    $("#label_next_step").text(strings["next_step"][language_index])
+    $("#label_cancel").html(strings["cancel"][language_index])
+    $("#label_next_step").html(strings["next_step"][language_index])
     $("#etagen_btn1").text(strings["floor_1"][language_index])
     $("#etagen_btn2").text(strings["floor_2"][language_index])
     $("#etagen_btn3").text(strings["floor_3"][language_index])
@@ -1091,7 +1091,7 @@ function navigationFinished() {
     $("#distance").css("margin", "10%");
     $("#distance").css("display", "block");
     $("#cancel").css("display", "none")
-    $("#label_next_step").text(strings["new_route_from_here"][language_index])
+    $("#label_next_step").html(strings["new_route_from_here"][language_index])
     displayInfoBottom("<b>" + strings["destination_reached"][language_index] + "</b>");
     var audio = new Audio('success_tone.mp3');
     audio.play();

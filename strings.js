@@ -1,7 +1,7 @@
 // Syntax: [german, english, spanish]
 const strings = {
-    "cancel": ["Navigation beenden", "Cancel navigation", "Terminar"],
-    "next_step": ["Zum nächsten Schritt", "Next step", "Al siguiente paso"],
+    "cancel": ["Navigation<br>beenden", "Cancel<br>navigation", "Terminar"],
+    "next_step": ["Zum nächsten<br>Schritt", "Next<br>step", "Al siguiente paso"],
     "from_room": ["Von Raum", "From room", "Desde habitación"],
     "to_room": ["Nach Raum", "To room", "Después habitación"],
     "room_nr": ["Raumnummer", "Room number", "Habitación número"],
@@ -16,7 +16,7 @@ const strings = {
     "qr_expl_step2": ["<b>Fokussieren</b> Sie mit der Kamera den <b>QR-Code</b>", "<b>Focus the QR-Code</b> with the camera", ""],
     "qr_expl_step3": ["Sobald die Kamera den QR-Code erkannt hat poppt ein Fenster mit der Referenz auf den Link auf. <b>Öffnen Sie dieses Fenster.</b>", "As soon as the camera recognized the QR-Code a window appears with the reference of the link saved in the QR-Code. <b>Open this window</b>", ""],
     "select_room": ["Klicken Sie auf einen Raum auf der Karte, um diesen auszuwählen", "Click on a room on the floor plan to select it", ""],
-    "new_route_from_here": ["Neue Route von hier starten", "Start new route from here", ""],
+    "new_route_from_here": ["Neue Route<br>von hier starten", "Start new route<br>from here", ""],
     "destination_reached": ["Sie haben Ihr Ziel erreicht", "You reached your destination", ""],
     "please_turn_and_go": ["Bitte drehen Sie sich nach %s1 und laufen Sie %s2", "Please turn %s1 and walk %s2", ""],
     "destination_is_at": ["Das Ziel befindet sich ", "The destination is "],

@@ -1105,7 +1105,7 @@ function getTextNextStep() {
     }
     var distance = document.getElementsByClassName("distances")[0].innerHTML.replace("&lt;", strings["less_than"][language_index]).replace(" m", " " + strings["meter"][language_index]);
     if ((document.getElementsByClassName("arrow_images")[0].src + "").includes("qr")) {
-        text += strings["you_stand_infront_of_the_room"][language_index] + from_room_object.room_nr + '<>';
+        text += strings["you_stand_infront_of_the_room"][language_index] + from_room_object.room_nr;
     }
     if ((document.getElementsByClassName("arrow_images")[0].src + "").includes("left")) {
         return text + strings["please_turn_and_go"][language_index].replace("%s1", strings["left"][language_index]).replace("%s2", distance);

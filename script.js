@@ -10,7 +10,7 @@ var from_room = current_url.searchParams.get(from_room_param_str);
 var to_room = current_url.searchParams.get(to_room_param_str);
 var lang = current_url.searchParams.get(language_param_str);
 var elev = current_url.searchParams.get(only_elevator_param_str);
-var only_elevator = true;
+var only_elevator = false;
 if (elev && Number(elev) == 1) {
     only_elevator = true;
 }
@@ -238,6 +238,7 @@ function api(type, query) {
                         if (!paths.hasOwnProperty(level)) {
                             paths[level] = [];
                         }
+                        if (level == 3) console.log(data[i])
                         paths[level].push(new Paths(data[i]));
                     }
                     onRoomsLoaded();
@@ -630,6 +631,7 @@ function getShortestPathBetweenPointsOnPaths(pointA, pathA_index, pointB, pathB_
     var all_possible_paths = getAllPossiblePathsWithoutStarisPathsInMiddle(path_connections, [
         [Number(pathA_index)]
     ], Number(pathB_index), from_room_object.level);
+    console.log(JSON.stringify(all_possible_paths))
     return getShortestPath(path_array, all_possible_paths, pointA, pointB, roomA, roomB);
 }
 

@@ -3,15 +3,15 @@ In diesem Projekt wurde ein mobiles Indoor-Navigationssystem für das Geoinstitu
 
 Die Benutzung der Software erfolgt in 3 Schritten:    
 
-1. __Bestimmung des Standortes des Benutzers:__   
+__1. Bestimmung des Standortes des Benutzers:__   
 
 ![Lokalisationsmodus](https://github.com/bennidietz/Geoinstitut_Indoor_Navigation/blob/master/screenshots/localization.png?raw=true)
 
-2. __Bestimmung des gewünschten Zielraumes:__ 
+__2. Bestimmung des gewünschten Zielraumes:__ 
 
 ![Destinationsmodus](https://github.com/bennidietz/Geoinstitut_Indoor_Navigation/blob/master/screenshots/destination.png?raw=true)
 
-3. __Navigationsmodus:__    
+__3. Navigationsmodus:__    
 
 ![Navigationsmodus](https://github.com/bennidietz/Geoinstitut_Indoor_Navigation/blob/master/screenshots/navigation.png?raw=true)     
 
@@ -20,5 +20,6 @@ Eine __barrierefreie Navigation__ der jeweiligen Route kann über das Fahrstuhl-
 Unter folgendem Link das System getestet werden: https://bennidietz.github.io/Geoinstitut_Indoor_Navigation/
 
 Das System ist für die Benutzung auf Smartphones zugeschnitten. 
-Zum Testen mit dem Smartphone kann dieser QR-Code gescannt werden:
+Zum Testen mit dem Smartphone kann dieser QR-Code gescannt werden:   
+
 ![QR-Code](https://chart.apis.google.com/chart?chs=200x200&cht=qr&chld=L&chl=https://bennidietz.github.io/Geoinstitut_Indoor_Navigation/)     

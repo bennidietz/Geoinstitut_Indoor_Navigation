@@ -17,7 +17,7 @@ Die Benutzung der Software erfolgt in 3 Schritten:
 
 Eine __barrierefreie Navigation__ der jeweiligen Route kann über das Fahrstuhl-Symbol in der Kopfleiste aufgerufen werden. Während der Navigation kann durch den __"Zum nächsten Schritt"-Button__ der Standort aktualisiert werden, sobald die jeweilige angzeigte Anweisung abgeschlosen wurde.
 
-Unter folgendem Link das System getestet werden: https://bennidietz.github.io/Geoinstitut_Indoor_Navigation/ 
+Unter folgendem Link das System getestet werden: https://bennidietz.github.io/Geoinstitut_Indoor_Navigation/
 
 Das System ist für die Benutzung auf Smartphones zugeschnitten. 
 Zum Testen mit dem Smartphone kann dieser QR-Code gescannt werden:
